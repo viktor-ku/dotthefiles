@@ -1,0 +1,15 @@
+[package]
+name = "dotthefiles"
+version = "0.1.0"
+authors = ["Viktor Kuroljov <viktor@ku.family>"]
+edition = "2018"
+
+[dependencies]
+os_info = { version = "2" }
+structopt = { version = "0.3" }
+serde = { version = "1.0" }
+serde_json = { version = "1.0" }
+serde_yaml = { version = "0.8" }
+tokio = { version = "0.2", features = ["full"] }
+async-std = { version = "1.6", features = ["tokio02"] }
+dirs = { version = "3.0" }
