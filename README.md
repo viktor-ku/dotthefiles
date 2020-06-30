@@ -1,0 +1,6 @@
+# dotthefiles
+
+### OS
+
+- `linux`
+- `macos`
