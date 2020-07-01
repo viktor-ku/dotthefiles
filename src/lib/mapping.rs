@@ -1,7 +1,7 @@
 use crate::lib::config::Config;
 use crate::lib::os_type_to_string;
-use async_std::io;
-use async_std::path::PathBuf;
+use std::io;
+use std::path::PathBuf;
 
 #[derive(Debug, PartialEq, Eq)]
 pub struct DotFile {
@@ -65,7 +65,7 @@ mod tests {
   use pretty_assertions::assert_eq;
 
   fn base_dir(t: &str) -> PathBuf {
-    PathBuf::from(std::env::current_dir().unwrap())
+    std::env::current_dir().unwrap()
       .join("examples")
       .join(t)
   }
@@ -77,7 +77,7 @@ mod tests {
     let home_dir = &dirs::home_dir().unwrap();
     let config_path = &base_dir.join("dotthefiles.yml");
 
-    let config = read_yaml(config_path).await?;
+    let config = read_yaml(config_path)?;
 
     let mapping = Mapping {
       base_dir,
@@ -108,7 +108,7 @@ mod tests {
     let home_dir = &dirs::home_dir().unwrap();
     let config_path = &base_dir.join("dotthefiles.yml");
 
-    let config = read_yaml(config_path).await?;
+    let config = read_yaml(config_path)?;
 
     let mapping = Mapping {
       base_dir,
@@ -135,7 +135,7 @@ mod tests {
     let home_dir = &dirs::home_dir().unwrap();
     let config_path = &base_dir.join("dotthefiles.yml");
 
-    let config = read_yaml(config_path).await?;
+    let config = read_yaml(config_path)?;
 
     let mapping = Mapping {
       base_dir,
@@ -162,7 +162,7 @@ mod tests {
     let home_dir = &dirs::home_dir().unwrap();
     let config_path = &base_dir.join("dotthefiles.yml");
 
-    let config = read_yaml(config_path).await?;
+    let config = read_yaml(config_path)?;
 
     let mapping = Mapping {
       base_dir,
