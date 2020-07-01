@@ -7,7 +7,7 @@ use cli::Cli;
 mod lib;
 use lib::config;
 use lib::mapping;
-use lib::read_file;
+use lib::read_yaml;
 
 #[tokio::main]
 async fn main() -> io::Result<()> {
@@ -21,9 +21,7 @@ async fn main() -> io::Result<()> {
   let mut base_dir = config_path.clone();
   base_dir.set_file_name("");
 
-  let config_yaml_str = read_file(&config_path).await?;
-  let config: config::Config =
-    serde_yaml::from_str(&config_yaml_str).expect("Could not parse yaml");
+  let config: config::Config = read_yaml(&config_path).await?;
 
   let mapping = mapping::Mapping {
     base_dir: &base_dir,
