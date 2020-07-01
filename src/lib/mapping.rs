@@ -101,17 +101,28 @@ mod tests {
     std::env::current_dir().unwrap().join("examples").join(t)
   }
 
+  struct FakeHomeDir;
+
+  impl FakeHomeDir {
+    fn linux() -> PathBuf {
+      PathBuf::from("/home/gman")
+    }
+    fn darwin() -> PathBuf {
+      PathBuf::from("/Users/gman")
+    }
+  }
+
   #[test]
   fn a01() -> io::Result<()> {
     let base_dir = &base_dir("a01");
-    let home_dir = &dirs::home_dir().unwrap();
+    let home_dir = &FakeHomeDir::linux();
     let config_path = &base_dir.join("dotthefiles.yml");
 
     let config = read_yaml(config_path)?;
 
     let mapping = Mapping {
       base_dir,
-      home_dir: &home_dir.into(),
+      home_dir: &home_dir,
       client_os: &client_os::Type::Linux,
     };
 
@@ -134,14 +145,14 @@ mod tests {
   #[test]
   fn a02() -> io::Result<()> {
     let base_dir = &base_dir("a02");
-    let home_dir = &dirs::home_dir().unwrap();
+    let home_dir = &FakeHomeDir::darwin();
     let config_path = &base_dir.join("dotthefiles.yml");
 
     let config = read_yaml(config_path)?;
 
     let mapping = Mapping {
       base_dir,
-      home_dir: &home_dir.into(),
+      home_dir: &home_dir,
       client_os: &client_os::Type::Darwin,
     };
 
@@ -160,14 +171,14 @@ mod tests {
   #[test]
   fn a03() -> io::Result<()> {
     let base_dir = &base_dir("a03");
-    let home_dir = &dirs::home_dir().unwrap();
+    let home_dir = &FakeHomeDir::darwin();
     let config_path = &base_dir.join("dotthefiles.yml");
 
     let config = read_yaml(config_path)?;
 
     let mapping = Mapping {
       base_dir,
-      home_dir: &home_dir.into(),
+      home_dir: &home_dir,
       client_os: &client_os::Type::Darwin,
     };
 
@@ -186,14 +197,14 @@ mod tests {
   #[test]
   fn a04() -> io::Result<()> {
     let base_dir = &base_dir("a04");
-    let home_dir = &dirs::home_dir().unwrap();
+    let home_dir = &FakeHomeDir::darwin();
     let config_path = &base_dir.join("dotthefiles.yml");
 
     let config = read_yaml(config_path)?;
 
     let mapping = Mapping {
       base_dir,
-      home_dir: &home_dir.into(),
+      home_dir: &home_dir,
       client_os: &client_os::Type::Darwin,
     };
 
@@ -216,14 +227,14 @@ mod tests {
   #[test]
   fn a05() -> io::Result<()> {
     let base_dir = &base_dir("a05");
-    let home_dir = &dirs::home_dir().unwrap();
+    let home_dir = &FakeHomeDir::darwin();
     let config_path = &base_dir.join("dotthefiles.yml");
 
     let config = read_yaml(config_path)?;
 
     let mapping = Mapping {
       base_dir,
-      home_dir: &home_dir.into(),
+      home_dir: &home_dir,
       client_os: &client_os::Type::Darwin,
     };
 
@@ -243,7 +254,7 @@ mod tests {
   #[test]
   fn a06() -> io::Result<()> {
     let base_dir = &base_dir("a06");
-    let home_dir = &dirs::home_dir().unwrap();
+    let home_dir = &FakeHomeDir::darwin();
     let config_path = &base_dir.join("dotthefiles.yml");
 
     let config = read_yaml(config_path)?;
@@ -275,7 +286,7 @@ mod tests {
   #[test]
   fn a07() -> io::Result<()> {
     let base_dir = &base_dir("a07");
-    let home_dir = &dirs::home_dir().unwrap();
+    let home_dir = &FakeHomeDir::darwin();
     let config_path = &base_dir.join("dotthefiles.yml");
 
     let config = read_yaml(config_path)?;
@@ -307,7 +318,7 @@ mod tests {
   #[test]
   fn a08() -> io::Result<()> {
     let base_dir = &base_dir("a08");
-    let home_dir = &dirs::home_dir().unwrap();
+    let home_dir = &FakeHomeDir::darwin();
     let config_path = &base_dir.join("dotthefiles.yml");
 
     let config = read_yaml(config_path)?;
