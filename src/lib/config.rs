@@ -1,7 +1,7 @@
 use crate::lib::client_os;
 use serde::Deserialize;
 
-#[derive(Debug, Deserialize, PartialEq)]
+#[derive(Debug, Deserialize, PartialEq, Eq)]
 pub enum Target {
   #[serde(alias = "linux")]
   Linux,
@@ -30,6 +30,27 @@ impl std::cmp::PartialEq<client_os::Type> for Target {
       Target::Win => x == &client_os::Type::Win,
       Target::Any => true,
     }
+  }
+}
+
+impl std::cmp::PartialOrd for Target {
+  fn partial_cmp(&self, x: &Self) -> Option<std::cmp::Ordering> {
+    match self {
+      Target::Any => match x {
+        Target::Any => Some(std::cmp::Ordering::Equal),
+        _ => Some(std::cmp::Ordering::Less),
+      },
+      _ => match x {
+        Target::Any => Some(std::cmp::Ordering::Greater),
+        _ => Some(std::cmp::Ordering::Equal),
+      },
+    }
+  }
+}
+
+impl std::cmp::Ord for Target {
+  fn cmp(&self, x: &Self) -> std::cmp::Ordering {
+    self.partial_cmp(x).unwrap()
   }
 }
 
