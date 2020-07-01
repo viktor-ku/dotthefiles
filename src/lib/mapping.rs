@@ -1,4 +1,4 @@
-use crate::lib::{client_os, config};
+use crate::lib::{client_os, config, Render};
 use std::io;
 use std::path::PathBuf;
 
@@ -67,11 +67,7 @@ impl<'a> Mapping<'a> {
       };
 
       for file in &section.files {
-        let to: PathBuf = if file.to == "~/" {
-          self.home_dir.clone()
-        } else {
-          PathBuf::from(&file.to)
-        };
+        let to = Render::from(&file.to);
 
         let mut from = PathBuf::from(self.base_dir).join("files");
 
@@ -81,7 +77,7 @@ impl<'a> Mapping<'a> {
 
         v.push(DotFile {
           name: file.name.clone(),
-          to,
+          to: to.render(self.home_dir),
           from,
         })
       }
@@ -340,6 +336,67 @@ mod tests {
     println!("\n|> {:}\n", &config_path.to_str().unwrap());
 
     assert_eq!(actual, expected, "should pick the right one out of two");
+
+    Ok(())
+  }
+
+  #[test]
+  fn a09() -> io::Result<()> {
+    let base_dir = &base_dir("a09");
+    let home_dir = &FakeHomeDir::linux();
+    let config_path = &base_dir.join("dotthefiles.yml");
+
+    let config = read_yaml(config_path)?;
+
+    let mapping = Mapping {
+      base_dir,
+      home_dir: &home_dir,
+      client_os: &client_os::Type::Linux,
+    };
+
+    let actual = mapping.map(&config)?;
+
+    let expected: Vec<DotFile> = vec![DotFile {
+      name: String::from("ide-script.sh"),
+      from: PathBuf::from(&base_dir.join("files/linux")),
+      to: PathBuf::from(&home_dir).join("Code"),
+    }];
+
+    println!("\n|> {:}\n", &config_path.to_str().unwrap());
+
+    assert_eq!(actual, expected, "should pick the right one out of two");
+
+    Ok(())
+  }
+
+  #[test]
+  fn a10() -> io::Result<()> {
+    let base_dir = &base_dir("a10");
+    let home_dir = &FakeHomeDir::linux();
+    let config_path = &base_dir.join("dotthefiles.yml");
+
+    let config = read_yaml(config_path)?;
+
+    let mapping = Mapping {
+      base_dir,
+      home_dir: &home_dir,
+      client_os: &client_os::Type::Linux,
+    };
+
+    let actual = mapping.map(&config)?;
+
+    let expected: Vec<DotFile> = vec![DotFile {
+      name: String::from("file.sh"),
+      from: PathBuf::from(&base_dir.join("files")),
+      to: PathBuf::from("/etc/some"),
+    }];
+
+    println!("\n|> {:}\n", &config_path.to_str().unwrap());
+
+    assert_eq!(
+      actual, expected,
+      "should decide to link from files/ to /etc/some"
+    );
 
     Ok(())
   }

@@ -6,3 +6,6 @@ pub mod config;
 pub mod mapping;
 
 pub mod client_os;
+
+mod render;
+pub use render::Render;
