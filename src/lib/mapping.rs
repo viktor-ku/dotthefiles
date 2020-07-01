@@ -1,5 +1,4 @@
-use crate::lib::config::Config;
-use crate::lib::os_type_to_string;
+use crate::lib::config;
 use std::io;
 use std::path::PathBuf;
 
@@ -18,22 +17,53 @@ pub struct Mapping<'a> {
 }
 
 impl<'a> Mapping<'a> {
-  pub fn map(&self, config: &Config) -> io::Result<Vec<DotFile>> {
+  /// Should return the right directory name to get our files from (pan intended).
+  /// Based on the target and currently used OS.
+  pub fn source_dir(&self, target: &config::Target) -> &str {
+    match self.os_type {
+      os_info::Type::Linux => {
+        if target == &config::Target::Any {
+          "any"
+        } else {
+          "linux"
+        }
+      }
+      os_info::Type::Macos => {
+        if target == &config::Target::Any {
+          "any"
+        } else {
+          "darwin"
+        }
+      }
+      os_info::Type::Windows => {
+        if target == &config::Target::Any {
+          "any"
+        } else {
+          "win"
+        }
+      }
+      _ => panic!("do not know which source directory to use!"),
+    }
+  }
+
+  pub fn map(&self, config: &config::Config) -> io::Result<Vec<DotFile>> {
     let mut v: Vec<DotFile> = Vec::with_capacity(32);
 
     for section in &config.map {
-      let mut compatible = false;
+      let mut compatible: Option<&config::Target> = None;
 
       for target in &section.target {
         if target == self.os_type {
-          compatible = true;
+          compatible = Some(target);
           break;
         }
       }
 
-      if !compatible {
+      if compatible.is_none() {
         continue;
       }
+
+      let compatible = compatible.unwrap();
 
       for file in &section.files {
         let to: PathBuf = if file.to == "~/" {
@@ -44,7 +74,7 @@ impl<'a> Mapping<'a> {
 
         let from = PathBuf::from(self.base_dir)
           .join("files")
-          .join(os_type_to_string(&self.os_type));
+          .join(self.source_dir(compatible));
 
         v.push(DotFile {
           name: file.name.clone(),
@@ -65,9 +95,7 @@ mod tests {
   use pretty_assertions::assert_eq;
 
   fn base_dir(t: &str) -> PathBuf {
-    std::env::current_dir().unwrap()
-      .join("examples")
-      .join(t)
+    std::env::current_dir().unwrap().join("examples").join(t)
   }
 
   #[tokio::test]
@@ -181,6 +209,37 @@ mod tests {
     assert_eq!(
       actual, expected,
       "should set right os type into the 'from' field"
+    );
+
+    Ok(())
+  }
+
+  #[tokio::test]
+  async fn a05() -> io::Result<()> {
+    let os_type = &os_info::Type::Macos;
+    let base_dir = &base_dir("a05");
+    let home_dir = &dirs::home_dir().unwrap();
+    let config_path = &base_dir.join("dotthefiles.yml");
+
+    let config = read_yaml(config_path)?;
+
+    let mapping = Mapping {
+      base_dir,
+      os_type: &os_type,
+      home_dir: &home_dir.into(),
+    };
+
+    let actual = mapping.map(&config)?;
+
+    let expected: Vec<DotFile> = vec![DotFile {
+      name: String::from("file.sh"),
+      from: PathBuf::from(&base_dir.join("files/any")),
+      to: PathBuf::from(&home_dir),
+    }];
+
+    assert_eq!(
+      actual, expected,
+      "should read 'any' target correctly and pass the file in to darwin"
     );
 
     Ok(())
