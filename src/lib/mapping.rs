@@ -303,4 +303,36 @@ mod tests {
 
     Ok(())
   }
+
+  #[tokio::test]
+  async fn a08() -> io::Result<()> {
+    let base_dir = &base_dir("a08");
+    let home_dir = &dirs::home_dir().unwrap();
+    let config_path = &base_dir.join("dotthefiles.yml");
+
+    let config = read_yaml(config_path)?;
+
+    let mapping = Mapping {
+      base_dir,
+      home_dir: &home_dir,
+      client_os: &client_os::Type::Darwin,
+    };
+
+    let actual = mapping.map(&config)?;
+
+    let expected: Vec<DotFile> = vec![DotFile {
+      name: String::from("file.sh"),
+      from: PathBuf::from(&base_dir.join("files/darwin")),
+      to: PathBuf::from(&home_dir),
+    }];
+
+    println!("\n|> {:}\n", &config_path.to_str().unwrap());
+
+    assert_eq!(
+      actual, expected,
+      "should pick the right one out of two"
+    );
+
+    Ok(())
+  }
 }
