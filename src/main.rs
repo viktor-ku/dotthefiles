@@ -10,8 +10,7 @@ use lib::config;
 use lib::mapping;
 use lib::read_yaml;
 
-#[tokio::main]
-async fn main() -> io::Result<()> {
+fn main() -> io::Result<()> {
   let cli = Cli::from_args();
   let config_path = cli.config.canonicalize()?;
 
