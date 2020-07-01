@@ -1,0 +1,6 @@
+map:
+  - target:
+    - any
+    files:
+    - name: file.sh
+      to: ~/
