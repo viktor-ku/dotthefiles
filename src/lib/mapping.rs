@@ -1,4 +1,4 @@
-use crate::lib::config;
+use crate::lib::{client_os, config};
 use std::io;
 use std::path::PathBuf;
 
@@ -12,7 +12,7 @@ pub struct DotFile {
 #[derive(Debug)]
 pub struct Mapping<'a> {
   pub base_dir: &'a PathBuf,
-  pub os_type: &'a os_info::Type,
+  pub client_os: &'a client_os::Type,
   pub home_dir: &'a PathBuf,
 }
 
@@ -20,22 +20,22 @@ impl<'a> Mapping<'a> {
   /// Should return the right directory name to get our files from (pan intended).
   /// Based on the target and currently used OS.
   pub fn source_dir(&self, target: &config::Target) -> &str {
-    match self.os_type {
-      os_info::Type::Linux => {
+    match self.client_os {
+      client_os::Type::Linux => {
         if target == &config::Target::Any {
           "any"
         } else {
           "linux"
         }
       }
-      os_info::Type::Macos => {
+      client_os::Type::Darwin => {
         if target == &config::Target::Any {
           "any"
         } else {
           "darwin"
         }
       }
-      os_info::Type::Windows => {
+      client_os::Type::Win => {
         if target == &config::Target::Any {
           "any"
         } else {
@@ -53,7 +53,7 @@ impl<'a> Mapping<'a> {
       let mut compatible: Option<&config::Target> = None;
 
       for target in &section.target {
-        if target == self.os_type {
+        if target == self.client_os {
           compatible = Some(target);
           break;
         }
@@ -100,7 +100,6 @@ mod tests {
 
   #[tokio::test]
   async fn a01() -> io::Result<()> {
-    let os_type = &os_info::Type::Linux;
     let base_dir = &base_dir("a01");
     let home_dir = &dirs::home_dir().unwrap();
     let config_path = &base_dir.join("dotthefiles.yml");
@@ -109,8 +108,8 @@ mod tests {
 
     let mapping = Mapping {
       base_dir,
-      os_type: &os_type,
       home_dir: &home_dir.into(),
+      client_os: &client_os::Type::Linux,
     };
 
     let actual = mapping.map(&config)?;
@@ -131,7 +130,6 @@ mod tests {
 
   #[tokio::test]
   async fn a02() -> io::Result<()> {
-    let os_type = &os_info::Type::Macos;
     let base_dir = &base_dir("a02");
     let home_dir = &dirs::home_dir().unwrap();
     let config_path = &base_dir.join("dotthefiles.yml");
@@ -140,8 +138,8 @@ mod tests {
 
     let mapping = Mapping {
       base_dir,
-      os_type: &os_type,
       home_dir: &home_dir.into(),
+      client_os: &client_os::Type::Darwin,
     };
 
     let actual = mapping.map(&config)?;
@@ -158,7 +156,6 @@ mod tests {
 
   #[tokio::test]
   async fn a03() -> io::Result<()> {
-    let os_type = &os_info::Type::Macos;
     let base_dir = &base_dir("a03");
     let home_dir = &dirs::home_dir().unwrap();
     let config_path = &base_dir.join("dotthefiles.yml");
@@ -167,8 +164,8 @@ mod tests {
 
     let mapping = Mapping {
       base_dir,
-      os_type: &os_type,
       home_dir: &home_dir.into(),
+      client_os: &client_os::Type::Darwin,
     };
 
     let actual = mapping.map(&config)?;
@@ -185,7 +182,6 @@ mod tests {
 
   #[tokio::test]
   async fn a04() -> io::Result<()> {
-    let os_type = &os_info::Type::Macos;
     let base_dir = &base_dir("a04");
     let home_dir = &dirs::home_dir().unwrap();
     let config_path = &base_dir.join("dotthefiles.yml");
@@ -194,8 +190,8 @@ mod tests {
 
     let mapping = Mapping {
       base_dir,
-      os_type: &os_type,
       home_dir: &home_dir.into(),
+      client_os: &client_os::Type::Darwin,
     };
 
     let actual = mapping.map(&config)?;
@@ -216,7 +212,6 @@ mod tests {
 
   #[tokio::test]
   async fn a05() -> io::Result<()> {
-    let os_type = &os_info::Type::Macos;
     let base_dir = &base_dir("a05");
     let home_dir = &dirs::home_dir().unwrap();
     let config_path = &base_dir.join("dotthefiles.yml");
@@ -225,8 +220,8 @@ mod tests {
 
     let mapping = Mapping {
       base_dir,
-      os_type: &os_type,
       home_dir: &home_dir.into(),
+      client_os: &client_os::Type::Darwin,
     };
 
     let actual = mapping.map(&config)?;

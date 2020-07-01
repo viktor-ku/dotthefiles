@@ -5,6 +5,7 @@ mod cli;
 use cli::Cli;
 
 mod lib;
+use lib::client_os;
 use lib::config;
 use lib::mapping;
 use lib::read_yaml;
@@ -23,10 +24,12 @@ async fn main() -> io::Result<()> {
 
   let config: config::Config = read_yaml(&config_path)?;
 
+  let client_os_info = &os_info::get().os_type();
+
   let mapping = mapping::Mapping {
     base_dir: &base_dir,
-    os_type: &os_info::get().os_type(),
     home_dir: &dirs::home_dir().unwrap(),
+    client_os: &client_os::Type::from(client_os_info),
   };
 
   let files = mapping.map(&config)?;

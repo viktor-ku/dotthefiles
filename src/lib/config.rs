@@ -1,5 +1,5 @@
+use crate::lib::client_os;
 use serde::Deserialize;
-use std::cmp::PartialEq;
 
 #[derive(Debug, Deserialize, PartialEq)]
 pub enum Target {
@@ -22,12 +22,12 @@ pub enum Target {
   Any,
 }
 
-impl PartialEq<os_info::Type> for Target {
-  fn eq(&self, other: &os_info::Type) -> bool {
+impl std::cmp::PartialEq<client_os::Type> for Target {
+  fn eq(&self, x: &client_os::Type) -> bool {
     match self {
-      Target::Linux => other == &os_info::Type::Linux,
-      Target::Darwin => other == &os_info::Type::Macos,
-      Target::Win => other == &os_info::Type::Windows,
+      Target::Linux => x == &client_os::Type::Linux,
+      Target::Darwin => x == &client_os::Type::Darwin,
+      Target::Win => x == &client_os::Type::Win,
       Target::Any => true,
     }
   }
