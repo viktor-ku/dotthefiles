@@ -101,8 +101,8 @@ mod tests {
     std::env::current_dir().unwrap().join("examples").join(t)
   }
 
-  #[tokio::test]
-  async fn a01() -> io::Result<()> {
+  #[test]
+  fn a01() -> io::Result<()> {
     let base_dir = &base_dir("a01");
     let home_dir = &dirs::home_dir().unwrap();
     let config_path = &base_dir.join("dotthefiles.yml");
@@ -131,8 +131,8 @@ mod tests {
     Ok(())
   }
 
-  #[tokio::test]
-  async fn a02() -> io::Result<()> {
+  #[test]
+  fn a02() -> io::Result<()> {
     let base_dir = &base_dir("a02");
     let home_dir = &dirs::home_dir().unwrap();
     let config_path = &base_dir.join("dotthefiles.yml");
@@ -157,8 +157,8 @@ mod tests {
     Ok(())
   }
 
-  #[tokio::test]
-  async fn a03() -> io::Result<()> {
+  #[test]
+  fn a03() -> io::Result<()> {
     let base_dir = &base_dir("a03");
     let home_dir = &dirs::home_dir().unwrap();
     let config_path = &base_dir.join("dotthefiles.yml");
@@ -183,8 +183,8 @@ mod tests {
     Ok(())
   }
 
-  #[tokio::test]
-  async fn a04() -> io::Result<()> {
+  #[test]
+  fn a04() -> io::Result<()> {
     let base_dir = &base_dir("a04");
     let home_dir = &dirs::home_dir().unwrap();
     let config_path = &base_dir.join("dotthefiles.yml");
@@ -213,8 +213,8 @@ mod tests {
     Ok(())
   }
 
-  #[tokio::test]
-  async fn a05() -> io::Result<()> {
+  #[test]
+  fn a05() -> io::Result<()> {
     let base_dir = &base_dir("a05");
     let home_dir = &dirs::home_dir().unwrap();
     let config_path = &base_dir.join("dotthefiles.yml");
@@ -240,8 +240,8 @@ mod tests {
     Ok(())
   }
 
-  #[tokio::test]
-  async fn a06() -> io::Result<()> {
+  #[test]
+  fn a06() -> io::Result<()> {
     let base_dir = &base_dir("a06");
     let home_dir = &dirs::home_dir().unwrap();
     let config_path = &base_dir.join("dotthefiles.yml");
@@ -272,8 +272,8 @@ mod tests {
     Ok(())
   }
 
-  #[tokio::test]
-  async fn a07() -> io::Result<()> {
+  #[test]
+  fn a07() -> io::Result<()> {
     let base_dir = &base_dir("a07");
     let home_dir = &dirs::home_dir().unwrap();
     let config_path = &base_dir.join("dotthefiles.yml");
@@ -304,8 +304,8 @@ mod tests {
     Ok(())
   }
 
-  #[tokio::test]
-  async fn a08() -> io::Result<()> {
+  #[test]
+  fn a08() -> io::Result<()> {
     let base_dir = &base_dir("a08");
     let home_dir = &dirs::home_dir().unwrap();
     let config_path = &base_dir.join("dotthefiles.yml");
@@ -328,10 +328,7 @@ mod tests {
 
     println!("\n|> {:}\n", &config_path.to_str().unwrap());
 
-    assert_eq!(
-      actual, expected,
-      "should pick the right one out of two"
-    );
+    assert_eq!(actual, expected, "should pick the right one out of two");
 
     Ok(())
   }
