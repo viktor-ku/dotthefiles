@@ -19,27 +19,27 @@ pub struct Mapping<'a> {
 impl<'a> Mapping<'a> {
   /// Should return the right directory name to get our files from (pan intended).
   /// Based on the target and currently used OS.
-  pub fn source_dir(&self, target: &config::Target) -> &str {
+  pub fn source_dir(&self, target: &config::Target) -> Option<&str> {
     match self.client_os {
       client_os::Type::Linux => {
         if target == &config::Target::Any {
-          "any"
+          None
         } else {
-          "linux"
+          Some("linux")
         }
       }
       client_os::Type::Darwin => {
         if target == &config::Target::Any {
-          "any"
+          None
         } else {
-          "darwin"
+          Some("darwin")
         }
       }
       client_os::Type::Win => {
         if target == &config::Target::Any {
-          "any"
+          None
         } else {
-          "win"
+          Some("win")
         }
       }
       _ => panic!("do not know which source directory to use!"),
@@ -73,9 +73,11 @@ impl<'a> Mapping<'a> {
           PathBuf::from(&file.to)
         };
 
-        let from = PathBuf::from(self.base_dir)
-          .join("files")
-          .join(self.source_dir(target));
+        let mut from = PathBuf::from(self.base_dir).join("files");
+
+        if let Some(source_dir) = self.source_dir(target) {
+          from.push(source_dir);
+        }
 
         v.push(DotFile {
           name: file.name.clone(),
@@ -229,14 +231,11 @@ mod tests {
 
     let expected: Vec<DotFile> = vec![DotFile {
       name: String::from("file.sh"),
-      from: PathBuf::from(&base_dir.join("files/any")),
+      from: PathBuf::from(&base_dir.join("files")),
       to: PathBuf::from(&home_dir),
     }];
 
-    assert_eq!(
-      actual, expected,
-      "should read 'any' target correctly and pass the file in to darwin"
-    );
+    assert_eq!(actual, expected, "should read 'any' target correctly");
 
     Ok(())
   }
@@ -259,7 +258,7 @@ mod tests {
 
     let expected: Vec<DotFile> = vec![DotFile {
       name: String::from("file.sh"),
-      from: PathBuf::from(&base_dir.join("files/any")),
+      from: PathBuf::from(&base_dir.join("files")),
       to: PathBuf::from(&home_dir),
     }];
 
@@ -291,7 +290,7 @@ mod tests {
 
     let expected: Vec<DotFile> = vec![DotFile {
       name: String::from("file.sh"),
-      from: PathBuf::from(&base_dir.join("files/any")),
+      from: PathBuf::from(&base_dir.join("files")),
       to: PathBuf::from(&home_dir),
     }];
 
