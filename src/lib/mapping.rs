@@ -50,20 +50,19 @@ impl<'a> Mapping<'a> {
     let mut v: Vec<DotFile> = Vec::with_capacity(32);
 
     for section in &config.map {
-      let mut compatible: Option<&config::Target> = None;
+      let mut compatible: Vec<&config::Target> = section
+        .target
+        .iter()
+        .filter(|target| target == &self.client_os)
+        .collect();
 
-      for target in &section.target {
-        if target == self.client_os {
-          compatible = Some(target);
-          break;
-        }
-      }
-
-      if compatible.is_none() {
+      if compatible.is_empty() {
         continue;
       }
 
-      let compatible = compatible.unwrap();
+      compatible.sort_unstable();
+
+      let compatible = compatible.first().unwrap();
 
       for file in &section.files {
         let to: PathBuf = if file.to == "~/" {
@@ -235,6 +234,38 @@ mod tests {
     assert_eq!(
       actual, expected,
       "should read 'any' target correctly and pass the file in to darwin"
+    );
+
+    Ok(())
+  }
+
+  #[tokio::test]
+  async fn a06() -> io::Result<()> {
+    let base_dir = &base_dir("a06");
+    let home_dir = &dirs::home_dir().unwrap();
+    let config_path = &base_dir.join("dotthefiles.yml");
+
+    let config = read_yaml(config_path)?;
+
+    let mapping = Mapping {
+      base_dir,
+      home_dir: &home_dir,
+      client_os: &client_os::Type::Darwin,
+    };
+
+    let actual = mapping.map(&config)?;
+
+    let expected: Vec<DotFile> = vec![DotFile {
+      name: String::from("file.sh"),
+      from: PathBuf::from(&base_dir.join("files/any")),
+      to: PathBuf::from(&home_dir),
+    }];
+
+    println!("\n|> {:}\n", &config_path.to_str().unwrap());
+
+    assert_eq!(
+      actual, expected,
+      "when `target` contains `any` in it alongside with other targets, treat it like `any` anyway"
     );
 
     Ok(())
