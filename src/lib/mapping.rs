@@ -393,7 +393,10 @@ mod tests {
 
     println!("\n|> {:}\n", &config_path.to_str().unwrap());
 
-    assert_eq!(actual, expected, "should decide to link from files/ to /etc/some");
+    assert_eq!(
+      actual, expected,
+      "should decide to link from files/ to /etc/some"
+    );
 
     Ok(())
   }
