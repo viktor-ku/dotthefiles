@@ -1,0 +1,6 @@
+map:
+  - target:
+    - linux
+    files:
+    - name: ide-script.sh
+      to: ~/Code
