@@ -50,19 +50,21 @@ impl<'a> Mapping<'a> {
     let mut v: Vec<DotFile> = Vec::with_capacity(32);
 
     for section in &config.map {
-      let mut compatible: Vec<&config::Target> = section
-        .target
-        .iter()
-        .filter(|target| target == &self.client_os)
-        .collect();
+      let target: &config::Target = {
+        let mut compatible: Vec<&config::Target> = section
+          .target
+          .iter()
+          .filter(|target| target == &self.client_os)
+          .collect();
 
-      if compatible.is_empty() {
-        continue;
-      }
+        if compatible.is_empty() {
+          continue;
+        }
 
-      compatible.sort_unstable();
+        compatible.sort_unstable();
 
-      let compatible = compatible.first().unwrap();
+        *compatible.first().unwrap()
+      };
 
       for file in &section.files {
         let to: PathBuf = if file.to == "~/" {
@@ -73,7 +75,7 @@ impl<'a> Mapping<'a> {
 
         let from = PathBuf::from(self.base_dir)
           .join("files")
-          .join(self.source_dir(compatible));
+          .join(self.source_dir(target));
 
         v.push(DotFile {
           name: file.name.clone(),
@@ -266,6 +268,38 @@ mod tests {
     assert_eq!(
       actual, expected,
       "when `target` contains `any` in it alongside with other targets, treat it like `any` anyway"
+    );
+
+    Ok(())
+  }
+
+  #[tokio::test]
+  async fn a07() -> io::Result<()> {
+    let base_dir = &base_dir("a07");
+    let home_dir = &dirs::home_dir().unwrap();
+    let config_path = &base_dir.join("dotthefiles.yml");
+
+    let config = read_yaml(config_path)?;
+
+    let mapping = Mapping {
+      base_dir,
+      home_dir: &home_dir,
+      client_os: &client_os::Type::Darwin,
+    };
+
+    let actual = mapping.map(&config)?;
+
+    let expected: Vec<DotFile> = vec![DotFile {
+      name: String::from("file.sh"),
+      from: PathBuf::from(&base_dir.join("files/any")),
+      to: PathBuf::from(&home_dir),
+    }];
+
+    println!("\n|> {:}\n", &config_path.to_str().unwrap());
+
+    assert_eq!(
+      actual, expected,
+      "when there is no `target` defined, treat it like `any` by default"
     );
 
     Ok(())

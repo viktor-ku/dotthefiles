@@ -22,6 +22,12 @@ pub enum Target {
   Any,
 }
 
+impl Default for Target {
+  fn default() -> Self {
+    Self::Any
+  }
+}
+
 impl std::cmp::PartialEq<client_os::Type> for Target {
   fn eq(&self, x: &client_os::Type) -> bool {
     match self {
@@ -63,9 +69,16 @@ pub struct Block {
 
 #[derive(Debug, Deserialize)]
 pub struct Section {
+  #[serde(default = "Section::default_target")]
   pub target: Vec<Target>,
   pub files: Vec<Block>,
   pub from: Option<String>,
+}
+
+impl Section {
+  fn default_target() -> Vec<Target> {
+    vec![Target::default()]
+  }
 }
 
 #[derive(Debug, Deserialize)]

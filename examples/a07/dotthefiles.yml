@@ -1,0 +1,4 @@
+map:
+  - files:
+    - name: file.sh
+      to: ~/
