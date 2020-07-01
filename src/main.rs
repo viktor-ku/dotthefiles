@@ -29,7 +29,7 @@ async fn main() -> io::Result<()> {
     home_dir: &dirs::home_dir().unwrap().into(),
   };
 
-  let files = mapping.map(&config).await?;
+  let files = mapping.map(&config)?;
   println!("{:#?}", files);
 
   Ok(())

@@ -18,7 +18,7 @@ pub struct Mapping<'a> {
 }
 
 impl<'a> Mapping<'a> {
-  pub async fn map(&self, config: &Config) -> io::Result<Vec<DotFile>> {
+  pub fn map(&self, config: &Config) -> io::Result<Vec<DotFile>> {
     let mut v: Vec<DotFile> = Vec::with_capacity(32);
 
     for section in &config.map {
@@ -85,7 +85,7 @@ mod tests {
       home_dir: &home_dir.into(),
     };
 
-    let actual = mapping.map(&config).await?;
+    let actual = mapping.map(&config)?;
 
     let expected: Vec<DotFile> = vec![DotFile {
       name: String::from("file.sh"),
@@ -116,7 +116,7 @@ mod tests {
       home_dir: &home_dir.into(),
     };
 
-    let actual = mapping.map(&config).await?;
+    let actual = mapping.map(&config)?;
 
     let expected: Vec<DotFile> = vec![];
 
@@ -143,7 +143,7 @@ mod tests {
       home_dir: &home_dir.into(),
     };
 
-    let actual = mapping.map(&config).await?;
+    let actual = mapping.map(&config)?;
 
     let expected: Vec<DotFile> = vec![];
 
@@ -170,7 +170,7 @@ mod tests {
       home_dir: &home_dir.into(),
     };
 
-    let actual = mapping.map(&config).await?;
+    let actual = mapping.map(&config)?;
 
     let expected: Vec<DotFile> = vec![DotFile {
       name: String::from("file.sh"),
