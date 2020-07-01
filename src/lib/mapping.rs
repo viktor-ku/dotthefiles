@@ -3,7 +3,7 @@ use async_std::io;
 use async_std::path::PathBuf;
 
 #[derive(Debug, PartialEq, Eq)]
-pub struct File {
+pub struct DotFile {
   name: String,
   from: PathBuf,
   to: PathBuf,
@@ -17,8 +17,8 @@ pub struct Mapping<'a> {
 }
 
 impl<'a> Mapping<'a> {
-  pub async fn map(&self, config: &Config) -> io::Result<Vec<File>> {
-    let mut v: Vec<File> = Vec::with_capacity(32);
+  pub async fn map(&self, config: &Config) -> io::Result<Vec<DotFile>> {
+    let mut v: Vec<DotFile> = Vec::with_capacity(32);
 
     for section in &config.map {
       let mut compatible = false;
@@ -43,7 +43,7 @@ impl<'a> Mapping<'a> {
 
         let from = PathBuf::from(self.base_dir).join("files/linux");
 
-        v.push(File {
+        v.push(DotFile {
           name: file.name.clone(),
           to,
           from,
@@ -76,7 +76,7 @@ mod tests {
 
     let config = read_yaml(config_path).await?;
 
-    let expected: Vec<File> = vec![File {
+    let expected: Vec<DotFile> = vec![DotFile {
       name: String::from("file.sh"),
       from: PathBuf::from(&base_dir.join("files/linux")),
       to: PathBuf::from(&home_dir),
@@ -105,7 +105,7 @@ mod tests {
 
     let config = read_yaml(config_path).await?;
 
-    let expected: Vec<File> = vec![];
+    let expected: Vec<DotFile> = vec![];
 
     let mapping = Mapping {
       base_dir,
