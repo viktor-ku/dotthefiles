@@ -28,6 +28,7 @@ async fn main() -> io::Result<()> {
   let mapping = mapping::Mapping {
     base_dir: &base_dir,
     os_type: &os_info::get().os_type(),
+    home_dir: &dirs::home_dir().unwrap().into(),
   };
 
   let files = mapping.map(&config).await?;
