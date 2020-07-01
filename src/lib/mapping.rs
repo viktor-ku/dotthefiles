@@ -368,4 +368,33 @@ mod tests {
 
     Ok(())
   }
+
+  #[test]
+  fn a10() -> io::Result<()> {
+    let base_dir = &base_dir("a10");
+    let home_dir = &FakeHomeDir::linux();
+    let config_path = &base_dir.join("dotthefiles.yml");
+
+    let config = read_yaml(config_path)?;
+
+    let mapping = Mapping {
+      base_dir,
+      home_dir: &home_dir,
+      client_os: &client_os::Type::Linux,
+    };
+
+    let actual = mapping.map(&config)?;
+
+    let expected: Vec<DotFile> = vec![DotFile {
+      name: String::from("file.sh"),
+      from: PathBuf::from(&base_dir.join("files")),
+      to: PathBuf::from("/etc/some"),
+    }];
+
+    println!("\n|> {:}\n", &config_path.to_str().unwrap());
+
+    assert_eq!(actual, expected, "should decide to link from files/ to /etc/some");
+
+    Ok(())
+  }
 }

@@ -15,9 +15,11 @@ impl<'a> Render<'a> {
 
       let stripped = body.strip_prefix("~/").unwrap();
 
-      if !stripped.to_path_buf().to_str().unwrap().is_empty() {
+      if !stripped.to_path_buf().to_str().unwrap_or("").is_empty() {
         p.push(body.strip_prefix("~/").unwrap());
       }
+    } else if body.is_absolute() {
+      p.push(body);
     }
 
     p
