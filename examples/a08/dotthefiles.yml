@@ -1,0 +1,7 @@
+map:
+  - target:
+    - darwin
+    - linux
+    files:
+    - name: file.sh
+      to: ~/
