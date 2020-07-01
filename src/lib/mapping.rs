@@ -13,6 +13,7 @@ pub struct File {
 pub struct Mapping<'a> {
   pub base_dir: &'a PathBuf,
   pub os_type: &'a os_info::Type,
+  pub home_dir: &'a PathBuf,
 }
 
 impl<'a> Mapping<'a> {
@@ -34,8 +35,8 @@ impl<'a> Mapping<'a> {
       }
 
       for file in &section.files {
-        let to = if file.to == "~/" {
-          dirs::home_dir().unwrap().into()
+        let to: PathBuf = if file.to == "~/" {
+          self.home_dir.clone()
         } else {
           PathBuf::from(&file.to)
         };
@@ -84,6 +85,7 @@ mod tests {
     let mapping = Mapping {
       base_dir,
       os_type: &os_type,
+      home_dir: &home_dir.into(),
     };
 
     let actual = mapping.map(&config).await?;
@@ -98,6 +100,7 @@ mod tests {
   async fn a02() -> io::Result<()> {
     let os_type = os_info::Type::Macos;
     let base_dir = &base_dir("a02");
+    let home_dir = dirs::home_dir().unwrap();
     let config_path = &base_dir.join("dotthefiles.yml");
 
     let config = read_yaml(config_path).await?;
@@ -107,6 +110,7 @@ mod tests {
     let mapping = Mapping {
       base_dir,
       os_type: &os_type,
+      home_dir: &home_dir.into(),
     };
 
     let actual = mapping.map(&config).await?;
