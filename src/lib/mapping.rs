@@ -1,13 +1,6 @@
-use crate::lib::{client_os, config, Render, RenderState};
+use crate::lib::{client_os, config, DotFile, Render, RenderState};
 use std::io;
 use std::path::PathBuf;
-
-#[derive(Debug, PartialEq, Eq)]
-pub struct DotFile {
-  name: String,
-  from: PathBuf,
-  to: PathBuf,
-}
 
 #[derive(Debug)]
 pub struct Mapping<'a> {
