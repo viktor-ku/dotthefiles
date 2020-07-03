@@ -13,4 +13,11 @@ pub struct Cli {
     about = "prints to stdout all files it would link if it was an interactive mode without actually linking anything"
   )]
   pub list: bool,
+
+  #[structopt(
+    short = "s",
+    long = "--skip",
+    about = "do no replace destination files if they already exist"
+  )]
+  pub skip: bool,
 }
