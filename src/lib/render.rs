@@ -1,4 +1,11 @@
-use std::path::PathBuf;
+use std::path::{Component, PathBuf};
+
+#[derive(Debug)]
+pub struct RenderState<'a> {
+  pub home_dir: &'a PathBuf,
+  pub base_dir: &'a PathBuf,
+  pub source_dir: &'a Option<&'a str>,
+}
 
 #[derive(Debug)]
 pub struct Render<'a> {
@@ -6,20 +13,54 @@ pub struct Render<'a> {
 }
 
 impl<'a> Render<'a> {
-  pub fn render(&self, home_dir: &PathBuf) -> PathBuf {
+  pub fn normalize(&self, state: &RenderState) -> PathBuf {
     let mut p = PathBuf::with_capacity(self.body.len() * 2);
     let body = &PathBuf::from(self.body);
 
-    if body.starts_with("~/") {
-      p.push(&home_dir);
+    if body.is_absolute() {
+      p.push("/");
+      p.push(body)
+    } else if body.is_relative() {
+      p.push(state.base_dir);
+      p.push(body);
+    } else if body.starts_with("~") {
+      p.push(state.home_dir);
 
       let stripped = body.strip_prefix("~/").unwrap();
-
       if !stripped.to_path_buf().to_str().unwrap_or("").is_empty() {
-        p.push(body.strip_prefix("~/").unwrap());
+        p.push(stripped);
       }
-    } else if body.is_absolute() {
-      p.push(body);
+    }
+
+    p
+  }
+
+  pub fn render(&self, state: &RenderState) -> PathBuf {
+    let mut p = PathBuf::with_capacity(self.body.len() * 2);
+    let norm = &self.normalize(state);
+
+    for one in norm.components() {
+      match one {
+        Component::Normal(val) => match val.to_str().unwrap() {
+          "~" => {
+            p.push(&state.home_dir);
+          }
+          "$TARGET" => {
+            if let Some(source_dir) = state.source_dir {
+              p.push(source_dir);
+            }
+          }
+          val => {
+            p.push(val);
+          }
+        },
+        Component::RootDir => {
+          p.push("/");
+        }
+        Component::CurDir => {}
+        Component::ParentDir => {}
+        Component::Prefix(_) => {}
+      }
     }
 
     p

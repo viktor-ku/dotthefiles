@@ -1,0 +1,5 @@
+map:
+  - from: otherstuff
+    files:
+    - name: file.sh
+      to: ~/some

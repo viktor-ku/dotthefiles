@@ -1,0 +1,8 @@
+map:
+  - target:
+    - linux
+    - darwin
+    from: /my/bucket/with/stuff/by/$TARGET
+    files:
+    - name: file.sh
+      to: ~/some
