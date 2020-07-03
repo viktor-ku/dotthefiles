@@ -1,0 +1,7 @@
+map:
+  - target:
+    - linux
+    from: ~/backup
+    files:
+    - name: file.sh
+      to: ~/some

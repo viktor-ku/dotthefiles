@@ -8,4 +8,4 @@ pub mod mapping;
 pub mod client_os;
 
 mod render;
-pub use render::Render;
+pub use render::{Render, RenderState};
