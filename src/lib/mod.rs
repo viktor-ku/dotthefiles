@@ -9,3 +9,6 @@ pub mod client_os;
 
 mod render;
 pub use render::{Render, RenderState};
+
+mod dotfile;
+pub use dotfile::DotFile;
