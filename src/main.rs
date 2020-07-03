@@ -32,7 +32,14 @@ fn main() -> io::Result<()> {
   };
 
   let files = mapping.map(&config)?;
-  println!("{:#?}", files);
+
+  if cli.list {
+    for file in &files {
+      println!("{:?};{:?}", file.from(), file.to());
+    }
+
+    return Ok(());
+  }
 
   Ok(())
 }
