@@ -64,7 +64,6 @@ impl std::cmp::Ord for Target {
 pub struct Block {
   pub name: String,
   pub to: String,
-  pub from: Option<String>,
 }
 
 #[derive(Debug, Deserialize)]
