@@ -79,8 +79,8 @@ fn main() -> std::io::Result<()> {
   for (op, file) in &ops {
     table.add_row(vec![
       String::from(op),
-      format!("{:?}", file.from),
-      format!("{:?}", file.to),
+      format!("{:?}", file.from()),
+      format!("{:?}", file.to()),
     ]);
   }
 
