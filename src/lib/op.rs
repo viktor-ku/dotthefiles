@@ -1,3 +1,4 @@
+#[derive(Debug)]
 pub enum Reason {
   /// Skip link because there is no `from` file found
   NoSource,
@@ -15,6 +16,7 @@ impl std::convert::From<&Reason> for String {
   }
 }
 
+#[derive(Debug)]
 pub enum Op {
   /// Create link if there is no such file
   Create,
@@ -25,9 +27,9 @@ pub enum Op {
   Skip(Reason),
 }
 
-impl std::convert::Into<String> for Op {
-  fn into(self) -> String {
-    match &self {
+impl std::convert::From<&Op> for String {
+  fn from(op: &Op) -> String {
+    match &op {
       Op::Create => String::from("Create Link"),
       Op::Replace => String::from("Replace Link"),
       Op::Skip(reason) => format!("Skip({})", String::from(reason)),
