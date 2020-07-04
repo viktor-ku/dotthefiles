@@ -1,11 +1,16 @@
 use comfy_table::Table;
+use std::fs;
 use structopt::StructOpt;
 
 mod cli;
 use cli::Cli;
 
 mod lib;
-use lib::{client_os, mapping, op, read_yaml, DotFile, Question};
+use lib::{
+  client_os, mapping, op, read_yaml,
+  report::{self, Report},
+  DotFile, Question,
+};
 
 mod macros;
 
@@ -84,6 +89,43 @@ fn main() -> std::io::Result<()> {
   let mut q = Question::new();
 
   ask!(q, "Would you like to proceed?");
+
+  let reports: Vec<Report> = ops
+    .iter()
+    .map(|(op, file)| match op {
+      op::Op::Replace => {
+        let from = &file.from();
+        let to = &file.to();
+
+        fs::remove_file(to).unwrap();
+        fs::hard_link(from, to).unwrap();
+
+        Report::new(&report::Op::Replaced, file)
+      }
+      op::Op::Create => {
+        let from = &file.from();
+        let to = &file.to();
+
+        fs::hard_link(from, to).unwrap();
+
+        Report::new(&report::Op::Created, file)
+      }
+      _ => Report::new(&report::Op::Skipped, file),
+    })
+    .collect();
+
+  let mut table = Table::new();
+  table.set_header(vec!["Action happened", "File"]);
+
+  for report in &reports {
+    table.add_row(vec![
+      format!("{:?}", report.op),
+      format!("{:?}", report.file.to()),
+    ]);
+  }
+
+  println!("...\nWhat actually happened:");
+  println!("{}", table);
 
   Ok(())
 }

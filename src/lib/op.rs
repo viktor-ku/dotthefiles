@@ -1,4 +1,4 @@
-#[derive(Debug)]
+#[derive(Debug, PartialEq)]
 pub enum Reason {
   /// Skip link because there is no `from` file found
   NoSource,
@@ -16,7 +16,7 @@ impl std::convert::From<&Reason> for String {
   }
 }
 
-#[derive(Debug)]
+#[derive(Debug, PartialEq)]
 pub enum Op {
   /// Create link if there is no such file
   Create,
