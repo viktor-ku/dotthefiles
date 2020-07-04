@@ -5,7 +5,9 @@ mod cli;
 use cli::Cli;
 
 mod lib;
-use lib::{client_os, mapping, op, read_yaml};
+use lib::{client_os, mapping, op, read_yaml, DotFile, Question};
+
+mod macros;
 
 fn main() -> std::io::Result<()> {
   let cli = &Cli::from_args();
@@ -37,40 +39,51 @@ fn main() -> std::io::Result<()> {
     return Ok(());
   }
 
+  let ops: Vec<(op::Op, &DotFile)> = files
+    .iter()
+    .map(|file| {
+      let from = &file.from();
+      let from_exists = from.exists();
+
+      let to = &file.to();
+      let to_exists = to.exists();
+
+      let op = {
+        if !from_exists {
+          op::Op::Skip(op::Reason::NoSource)
+        } else if to_exists {
+          if cli.skip {
+            op::Op::Skip(op::Reason::DestExists)
+          } else {
+            op::Op::Replace
+          }
+        } else {
+          op::Op::Create
+        }
+      };
+
+      (op, file)
+    })
+    .collect();
+
   println!("What exactly am I about to do:");
 
   let mut table = Table::new();
   table.set_header(vec!["Action", "From", "To"]);
 
-  for file in files {
-    let from = &file.from();
-    let from_exists = from.exists();
-
-    let to = &file.to();
-    let to_exists = to.exists();
-
-    let op = {
-      if !from_exists {
-        op::Op::Skip(op::Reason::NoSource)
-      } else if to_exists {
-        if cli.skip {
-          op::Op::Skip(op::Reason::DestExists)
-        } else {
-          op::Op::Replace
-        }
-      } else {
-        op::Op::Create
-      }
-    };
-
+  for (op, file) in &ops {
     table.add_row(vec![
-      &op.into(),
-      &format!("{:?}", from),
-      &format!("{:?}", to),
+      String::from(op),
+      format!("{:?}", file.from),
+      format!("{:?}", file.to),
     ]);
   }
 
   println!("{}", table);
+
+  let mut q = Question::new();
+
+  ask!(q, "Would you like to proceed?");
 
   Ok(())
 }
