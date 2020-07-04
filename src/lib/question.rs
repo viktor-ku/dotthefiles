@@ -1,3 +1,4 @@
+use colored::Colorize;
 use rustyline::Editor;
 
 #[derive(Debug)]
@@ -35,7 +36,9 @@ impl Question {
   }
 
   pub fn ask(&mut self, question: &str) -> Option<bool> {
-    let readline = &self.rl.readline(&format!("|> {} (y/N): ", question));
+    let readline = &self
+      .rl
+      .readline(&format!("|> {} (y/N): ", question.green().bold()));
 
     match readline {
       Ok(line) => Some(Answer::new(&line).into()),
