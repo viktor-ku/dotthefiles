@@ -1,6 +1,4 @@
-cd osxcross 2>> /dev/null
-
-if [[ $? == 0 ]]; then
+if test -d "osxcross"; then
   echo Already exists
   exit 0
 fi
