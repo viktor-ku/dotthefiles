@@ -12,9 +12,14 @@ env:
 
 jobs:
 
-  build-linux:
-    name: Build
-    runs-on: ubuntu-20.04
+  build:
+    strategy:
+      matrix:
+        os:
+          - ubuntu-20.04
+          - macos-10.15
+    name: Build for `${{ runner.os }}`
+    runs-on: ${{ matrix.os }}
     steps:
       - uses: actions/checkout@v2
 
@@ -40,7 +45,7 @@ jobs:
       - name: Upload an artifact
         uses: actions/upload-artifact@v2
         with:
-          name: linux
+          name: ${{ runner.os }}
           path: ${{ github.workspace }}/target/release/dotthefiles
 
   release:
