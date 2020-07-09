@@ -52,7 +52,7 @@ jobs:
     name: Create Release
     runs-on: ubuntu-20.04
     needs:
-      - build-linux
+      - build
     steps:
       - name: Download artifacts
         uses: actions/download-artifact@v2
