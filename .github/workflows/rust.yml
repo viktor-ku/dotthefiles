@@ -1,4 +1,4 @@
-name: Rust
+name: Release
 
 on:
   push:
@@ -12,7 +12,7 @@ env:
 
 jobs:
 
-  build:
+  build-linux:
     name: Build
     runs-on: ubuntu-20.04
     steps:
@@ -31,5 +31,46 @@ jobs:
             target
           key: ${{ runner.os }}-cargo-${{ hashFiles('**/Cargo.lock') }}
 
-      - name: Build
-        run: cargo build --release
+      - name: Build Release
+        uses: actions-rs/cargo@v1
+        with:
+          command: build
+          args: --release
+
+      - name: Upload an artifact
+        uses: actions/upload-artifact@v2
+        with:
+          name: linux
+          path: ${{ github.workspace }}/target/release/dotthefiles
+
+  release:
+    name: Create Release
+    runs-on: ubuntu-20.04
+    needs:
+      - build-linux
+    steps:
+      - name: Download artifacts
+        uses: actions/download-artifacts@v2
+
+      - name: Display stuff
+        run: ls -Rl
+
+      # - name: Create Release
+      #   id: create_release
+      #   uses: actions/create-release@v1
+      #   env:
+      #     GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      #   with:
+      #     tag_name: ${{ github.ref }}
+      #     release_name: Testing releases ${{ github.ref }}
+
+      # - name: Upload Release
+      #   id: upload-release-asset
+      #   uses: actions/upload-release-asset@v1
+      #   env:
+      #     GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      #   with:
+      #     upload_url: ${{ steps.create_release.outputs.upload_url }}
+      #     asset_path: ./dotthefiles
+      #     asset_name: dotthefiles
+      #     asset_content_type: application/octet-stream
