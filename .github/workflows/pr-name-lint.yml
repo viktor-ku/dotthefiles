@@ -1,3 +1,5 @@
+name: PR / PR Name Lint
+
 on:
   pull_request:
     types:
