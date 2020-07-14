@@ -22,11 +22,8 @@ jobs:
         with:
           node-version: 12
 
-      - name: Init an npm
-        run: npm init -y
-
       - name: Install deps
-        run: npm i @commitlint/config-conventional
+        run: npm ci --production
 
       - name: Lint PR Name
         uses: JulienKode/pull-request-name-linter-action@v0.1.2
