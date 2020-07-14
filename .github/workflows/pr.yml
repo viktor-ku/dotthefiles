@@ -4,7 +4,7 @@ on: [pull_request]
 
 jobs:
 
-  commitlint:
+  commit-lint:
     name: Lint Commits
     runs-on: ubuntu-latest
     env:
@@ -13,7 +13,30 @@ jobs:
       - uses: actions/checkout@v2
         with:
           fetch-depth: 0
-
       - uses: wagoid/commitlint-github-action@v1
         with:
           configFile: .commitlintrc.yml
+
+  pr-name-lint:
+    name: Lint PR Name
+    runs-on: ubuntu-latest
+    env:
+      GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+    steps:
+      - uses: actions/checkout@v2
+
+      - name: Setup node
+        uses: actions/setup-node@v2-beta
+        with:
+          node-version: 12
+
+      - name: Init an npm
+        run: npm init -y
+
+      - name: Install deps
+        run: npm i @commitlint/config-conventional
+
+      - name: Lint PR Name
+        uses: JulienKode/pull-request-name-linter-action@v0.1.2
+        with:
+          configuration-path: .commitlintrc.yml
