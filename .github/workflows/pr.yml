@@ -10,18 +10,18 @@ on:
 
 jobs:
 
-  commit-lint:
-    name: Lint Commits
-    runs-on: ubuntu-latest
-    env:
-      GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-    steps:
-      - uses: actions/checkout@v2
-        with:
-          fetch-depth: 0
-      - uses: wagoid/commitlint-github-action@v1
-        with:
-          configFile: .commitlintrc.yml
+  # commit-lint:
+  #   name: Lint Commits
+  #   runs-on: ubuntu-latest
+  #   env:
+  #     GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+  #   steps:
+  #     - uses: actions/checkout@v2
+  #       with:
+  #         fetch-depth: 0
+  #     - uses: wagoid/commitlint-github-action@v1
+  #       with:
+  #         configFile: .commitlintrc.yml
 
   pr-name-lint:
     name: Lint PR Name
