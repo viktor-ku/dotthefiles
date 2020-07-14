@@ -1,2 +1,0 @@
-hooks:
-  commit-msg: npx commitlint -e
