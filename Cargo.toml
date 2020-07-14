@@ -8,7 +8,6 @@ edition = "2018"
 os_info = { version = "2" }
 structopt = { version = "0.3" }
 serde = { version = "1.0" }
-serde_json = { version = "1.0" }
 serde_yaml = { version = "0.8" }
 dirs = { version = "3.0" }
 comfy-table = { version = "1.0" }

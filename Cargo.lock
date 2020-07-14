@@ -279,7 +279,6 @@ dependencies = [
  "pretty_assertions",
  "rustyline",
  "serde",
- "serde_json",
  "serde_yaml",
  "structopt",
 ]
