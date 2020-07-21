@@ -70,8 +70,8 @@ impl<'a> Mapping<'a> {
 
         v.push(DotFile {
           name: file.name.clone(),
-          to: to.render(&state),
-          from: from.render(&state),
+          dst: to.render(&state),
+          src: from.render(&state),
         })
       }
     }
@@ -119,16 +119,14 @@ mod tests {
 
     let expected: Vec<DotFile> = vec![DotFile {
       name: String::from("file.sh"),
-      from: PathBuf::from(&base_dir.join("files/linux")),
-      to: PathBuf::from(&home_dir),
+      src: PathBuf::from(&base_dir.join("files/linux")),
+      dst: PathBuf::from(&home_dir),
     }];
 
     assert_eq!(
       actual, expected,
       "given the right target it should provide us with the simplest file mapping"
     );
-    assert!(!actual[0].from.to_str().unwrap().ends_with('/'));
-    assert!(!actual[0].to.to_str().unwrap().ends_with('/'));
 
     Ok(())
   }
@@ -203,16 +201,14 @@ mod tests {
 
     let expected: Vec<DotFile> = vec![DotFile {
       name: String::from("file.sh"),
-      from: PathBuf::from(&base_dir.join("files/darwin")),
-      to: PathBuf::from(&home_dir),
+      src: PathBuf::from(&base_dir.join("files/darwin")),
+      dst: PathBuf::from(&home_dir),
     }];
 
     assert_eq!(
       actual, expected,
       "should set right os type into the 'from' field"
     );
-    assert!(!actual[0].from.to_str().unwrap().ends_with('/'));
-    assert!(!actual[0].to.to_str().unwrap().ends_with('/'));
 
     Ok(())
   }
@@ -235,13 +231,11 @@ mod tests {
 
     let expected: Vec<DotFile> = vec![DotFile {
       name: String::from("file.sh"),
-      from: PathBuf::from(&base_dir.join("files")),
-      to: PathBuf::from(&home_dir),
+      src: PathBuf::from(&base_dir.join("files")),
+      dst: PathBuf::from(&home_dir),
     }];
 
     assert_eq!(actual, expected, "should read 'any' target correctly");
-    assert!(!actual[0].from.to_str().unwrap().ends_with('/'));
-    assert!(!actual[0].to.to_str().unwrap().ends_with('/'));
 
     Ok(())
   }
@@ -264,8 +258,8 @@ mod tests {
 
     let expected: Vec<DotFile> = vec![DotFile {
       name: String::from("file.sh"),
-      from: PathBuf::from(&base_dir.join("files")),
-      to: PathBuf::from(&home_dir),
+      src: PathBuf::from(&base_dir.join("files")),
+      dst: PathBuf::from(&home_dir),
     }];
 
     println!("\n|> {:}\n", &config_path.to_str().unwrap());
@@ -274,8 +268,6 @@ mod tests {
       actual, expected,
       "when `target` contains `any` in it alongside with other targets, treat it like `any` anyway"
     );
-    assert!(!actual[0].from.to_str().unwrap().ends_with('/'));
-    assert!(!actual[0].to.to_str().unwrap().ends_with('/'));
 
     Ok(())
   }
@@ -298,8 +290,8 @@ mod tests {
 
     let expected: Vec<DotFile> = vec![DotFile {
       name: String::from("file.sh"),
-      from: PathBuf::from(&base_dir.join("files")),
-      to: PathBuf::from(&home_dir),
+      src: PathBuf::from(&base_dir.join("files")),
+      dst: PathBuf::from(&home_dir),
     }];
 
     println!("\n|> {:}\n", &config_path.to_str().unwrap());
@@ -308,8 +300,6 @@ mod tests {
       actual, expected,
       "when there is no `target` defined, treat it like `any` by default"
     );
-    assert!(!actual[0].from.to_str().unwrap().ends_with('/'));
-    assert!(!actual[0].to.to_str().unwrap().ends_with('/'));
 
     Ok(())
   }
@@ -332,15 +322,13 @@ mod tests {
 
     let expected: Vec<DotFile> = vec![DotFile {
       name: String::from("file.sh"),
-      from: PathBuf::from(&base_dir.join("files/darwin")),
-      to: PathBuf::from(&home_dir),
+      src: PathBuf::from(&base_dir.join("files/darwin")),
+      dst: PathBuf::from(&home_dir),
     }];
 
     println!("\n|> {:}\n", &config_path.to_str().unwrap());
 
     assert_eq!(actual, expected, "should pick the right one out of two");
-    assert!(!actual[0].from.to_str().unwrap().ends_with('/'));
-    assert!(!actual[0].to.to_str().unwrap().ends_with('/'));
 
     Ok(())
   }
@@ -363,15 +351,13 @@ mod tests {
 
     let expected: Vec<DotFile> = vec![DotFile {
       name: String::from("ide-script.sh"),
-      from: PathBuf::from(&base_dir.join("files/linux")),
-      to: PathBuf::from(&home_dir).join("Code"),
+      src: PathBuf::from(&base_dir.join("files/linux")),
+      dst: PathBuf::from(&home_dir).join("Code"),
     }];
 
     println!("\n|> {:}\n", &config_path.to_str().unwrap());
 
     assert_eq!(actual, expected, "should pick the right one out of two");
-    assert!(!actual[0].from.to_str().unwrap().ends_with('/'));
-    assert!(!actual[0].to.to_str().unwrap().ends_with('/'));
 
     Ok(())
   }
@@ -394,8 +380,8 @@ mod tests {
 
     let expected: Vec<DotFile> = vec![DotFile {
       name: String::from("file.sh"),
-      from: PathBuf::from(&base_dir.join("files")),
-      to: PathBuf::from("/etc/some"),
+      src: PathBuf::from(&base_dir.join("files")),
+      dst: PathBuf::from("/etc/some"),
     }];
 
     println!("\n|> {:}\n", &config_path.to_str().unwrap());
@@ -404,8 +390,6 @@ mod tests {
       actual, expected,
       "should decide to link from files/ to /etc/some"
     );
-    assert!(!actual[0].from.to_str().unwrap().ends_with('/'));
-    assert!(!actual[0].to.to_str().unwrap().ends_with('/'));
 
     Ok(())
   }
@@ -432,8 +416,8 @@ mod tests {
 
       let expected: Vec<DotFile> = vec![DotFile {
         name: String::from("file.sh"),
-        from: PathBuf::from(&base_dir.join("otherstuff")),
-        to: PathBuf::from(&home_dir).join("some"),
+        src: PathBuf::from(&base_dir.join("otherstuff")),
+        dst: PathBuf::from(&home_dir).join("some"),
       }];
 
       println!("\n|> {:}\n", &config_path.to_str().unwrap());
@@ -442,8 +426,6 @@ mod tests {
         actual, expected,
         "if `from` field is provided and is a relative path then resolve it relative to the config's location regardless of the client os"
       );
-      assert!(!actual[0].from.to_str().unwrap().ends_with('/'));
-      assert!(!actual[0].to.to_str().unwrap().ends_with('/'));
 
       Ok(())
     }
@@ -466,8 +448,8 @@ mod tests {
 
       let expected: Vec<DotFile> = vec![DotFile {
         name: String::from("file.sh"),
-        from: PathBuf::from(&base_dir).join("otherstuff"),
-        to: PathBuf::from(&home_dir).join("some"),
+        src: PathBuf::from(&base_dir).join("otherstuff"),
+        dst: PathBuf::from(&home_dir).join("some"),
       }];
 
       println!("\n|> {:}\n", &config_path.to_str().unwrap());
@@ -476,8 +458,6 @@ mod tests {
         actual, expected,
         "should resolve relative `from` regardless of the target os"
       );
-      assert!(!actual[0].from.to_str().unwrap().ends_with('/'));
-      assert!(!actual[0].to.to_str().unwrap().ends_with('/'));
 
       Ok(())
     }
@@ -500,8 +480,8 @@ mod tests {
 
       let expected: Vec<DotFile> = vec![DotFile {
         name: String::from("file.sh"),
-        from: PathBuf::from(&home_dir).join("backup"),
-        to: PathBuf::from(&home_dir).join("some"),
+        src: PathBuf::from(&home_dir).join("backup"),
+        dst: PathBuf::from(&home_dir).join("some"),
       }];
 
       println!("\n|> {:}\n", &config_path.to_str().unwrap());
@@ -510,8 +490,6 @@ mod tests {
         actual, expected,
         "should be able to resolve home dir correctly in the `from` field"
       );
-      assert!(!actual[0].from.to_str().unwrap().ends_with('/'));
-      assert!(!actual[0].to.to_str().unwrap().ends_with('/'));
 
       Ok(())
     }
@@ -534,8 +512,8 @@ mod tests {
 
       let expected: Vec<DotFile> = vec![DotFile {
         name: String::from("file.sh"),
-        from: PathBuf::from("/my/bucket/with/stuff/by/linux"),
-        to: PathBuf::from(&home_dir).join("some"),
+        src: PathBuf::from("/my/bucket/with/stuff/by/linux"),
+        dst: PathBuf::from(&home_dir).join("some"),
       }];
 
       println!("\n|> {:}\n", &config_path.to_str().unwrap());
@@ -544,8 +522,6 @@ mod tests {
         actual, expected,
         "should look for the absolute path with target folder when a $TARGET variable is present"
       );
-      assert!(!actual[0].from.to_str().unwrap().ends_with('/'));
-      assert!(!actual[0].to.to_str().unwrap().ends_with('/'));
 
       Ok(())
     }
@@ -568,8 +544,8 @@ mod tests {
 
       let expected: Vec<DotFile> = vec![DotFile {
         name: String::from("file.sh"),
-        from: PathBuf::from("/my/bucket/with/stuff/by"),
-        to: PathBuf::from(&home_dir).join("some"),
+        src: PathBuf::from("/my/bucket/with/stuff/by"),
+        dst: PathBuf::from(&home_dir).join("some"),
       }];
 
       println!("\n|> {:}\n", &config_path.to_str().unwrap());
@@ -578,8 +554,6 @@ mod tests {
         actual, expected,
         "in case there is a $TARGET variable in the `from` field, but the target is any, should look for just the `from` field"
       );
-      assert!(!actual[0].from.to_str().unwrap().ends_with('/'));
-      assert!(!actual[0].to.to_str().unwrap().ends_with('/'));
 
       Ok(())
     }
@@ -602,8 +576,8 @@ mod tests {
 
       let expected: Vec<DotFile> = vec![DotFile {
         name: String::from("file.sh"),
-        from: PathBuf::from(&base_dir).join("stuff"),
-        to: PathBuf::from(&home_dir).join("some"),
+        src: PathBuf::from(&base_dir).join("stuff"),
+        dst: PathBuf::from(&home_dir).join("some"),
       }];
 
       println!("\n|> {:}\n", &config_path.to_str().unwrap());
@@ -612,8 +586,6 @@ mod tests {
         actual, expected,
         "should just look into the /stuff folder for any file for any platform"
       );
-      assert!(!actual[0].from.to_str().unwrap().ends_with('/'));
-      assert!(!actual[0].to.to_str().unwrap().ends_with('/'));
 
       Ok(())
     }

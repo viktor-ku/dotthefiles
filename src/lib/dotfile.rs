@@ -3,19 +3,19 @@ use std::path::PathBuf;
 #[derive(Debug, PartialEq, Eq)]
 pub struct DotFile {
   pub name: String,
-  pub from: PathBuf,
-  pub to: PathBuf,
+  pub src: PathBuf,
+  pub dst: PathBuf,
 }
 
 impl DotFile {
   /// Compiles final `to` path
   pub fn to(&self) -> PathBuf {
-    PathBuf::from(&self.to).join(PathBuf::from(&self.name).file_name().unwrap())
+    PathBuf::from(&self.dst).join(PathBuf::from(&self.name).file_name().unwrap())
   }
 
   /// Compiles final `from` path
   pub fn from(&self) -> PathBuf {
-    PathBuf::from(&self.from).join(PathBuf::from(&self.name).file_name().unwrap())
+    PathBuf::from(&self.src).join(PathBuf::from(&self.name).file_name().unwrap())
   }
 }
 
@@ -28,8 +28,8 @@ mod tests {
   fn a01() {
     let file = DotFile {
       name: String::from("file.sh"),
-      from: PathBuf::from("/from"),
-      to: PathBuf::from("/to"),
+      src: PathBuf::from("/from"),
+      dst: PathBuf::from("/to"),
     };
 
     assert_eq!(
@@ -48,8 +48,8 @@ mod tests {
   fn a02() {
     let file = DotFile {
       name: String::from("sub-folder/file.sh"),
-      from: PathBuf::from("/from"),
-      to: PathBuf::from("/to"),
+      src: PathBuf::from("/from"),
+      dst: PathBuf::from("/to"),
     };
 
     assert_eq!(
