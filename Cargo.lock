@@ -275,6 +275,7 @@ dependencies = [
  "colored",
  "comfy-table",
  "dirs",
+ "libc",
  "os_info",
  "pretty_assertions",
  "rustyline",

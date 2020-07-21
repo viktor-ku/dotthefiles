@@ -19,3 +19,6 @@ mod question;
 pub use question::Question;
 
 pub mod report;
+
+mod user;
+pub use user::User;
