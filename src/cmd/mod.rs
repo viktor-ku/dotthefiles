@@ -1,2 +1,2 @@
-mod ln;
-pub use ln::ln;
+mod link;
+pub use link::link;

@@ -36,7 +36,7 @@ fn main() -> Result<()> {
         user,
       };
 
-      cmd::ln(&cx)?;
+      cmd::link(&cx)?;
     }
   }
 
