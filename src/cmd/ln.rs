@@ -1,5 +1,5 @@
-use std::io::Result;
 use crate::Context;
+use std::io::Result;
 
 pub fn ln(cx: &Context) -> Result<()> {
   Ok(())
