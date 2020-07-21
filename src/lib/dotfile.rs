@@ -1,5 +1,5 @@
+use serde::{Deserialize, Serialize};
 use std::path::PathBuf;
-use serde::{Serialize, Deserialize};
 
 #[derive(Debug, PartialEq, Eq, Serialize, Deserialize)]
 pub struct DotFile<'a> {
