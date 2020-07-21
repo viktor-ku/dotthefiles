@@ -1,13 +1,13 @@
 use std::path::PathBuf;
 
 #[derive(Debug, PartialEq, Eq)]
-pub struct DotFile {
-  pub name: String,
+pub struct DotFile<'a> {
+  pub name: &'a str,
   pub src: PathBuf,
   pub dst: PathBuf,
 }
 
-impl DotFile {
+impl<'a> DotFile<'a> {
   /// Compiles final `to` path
   pub fn to(&self) -> PathBuf {
     PathBuf::from(&self.dst).join(PathBuf::from(&self.name).file_name().unwrap())
@@ -27,7 +27,7 @@ mod tests {
   #[test]
   fn a01() {
     let file = DotFile {
-      name: String::from("file.sh"),
+      name: "file.sh",
       src: PathBuf::from("/from"),
       dst: PathBuf::from("/to"),
     };
@@ -47,7 +47,7 @@ mod tests {
   #[test]
   fn a02() {
     let file = DotFile {
-      name: String::from("sub-folder/file.sh"),
+      name: "sub-folder/file.sh",
       src: PathBuf::from("/from"),
       dst: PathBuf::from("/to"),
     };

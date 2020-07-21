@@ -38,7 +38,7 @@ impl<'a> Mapping<'a> {
     }
   }
 
-  pub fn map(&self, config: &config::Config) -> io::Result<Vec<DotFile>> {
+  pub fn map(&self, config: &'a config::Config) -> io::Result<Vec<DotFile>> {
     let mut v: Vec<DotFile> = Vec::with_capacity(32);
 
     for section in &config.map {
@@ -69,7 +69,7 @@ impl<'a> Mapping<'a> {
         };
 
         v.push(DotFile {
-          name: file.name.clone(),
+          name: &file.name,
           dst: to.render(&state),
           src: from.render(&state),
         })
@@ -118,7 +118,7 @@ mod tests {
     let actual = mapping.map(&config)?;
 
     let expected: Vec<DotFile> = vec![DotFile {
-      name: String::from("file.sh"),
+      name: "file.sh",
       src: PathBuf::from(&base_dir.join("files/linux")),
       dst: PathBuf::from(&home_dir),
     }];
@@ -200,7 +200,7 @@ mod tests {
     let actual = mapping.map(&config)?;
 
     let expected: Vec<DotFile> = vec![DotFile {
-      name: String::from("file.sh"),
+      name: "file.sh",
       src: PathBuf::from(&base_dir.join("files/darwin")),
       dst: PathBuf::from(&home_dir),
     }];
@@ -230,7 +230,7 @@ mod tests {
     let actual = mapping.map(&config)?;
 
     let expected: Vec<DotFile> = vec![DotFile {
-      name: String::from("file.sh"),
+      name: "file.sh",
       src: PathBuf::from(&base_dir.join("files")),
       dst: PathBuf::from(&home_dir),
     }];
@@ -257,7 +257,7 @@ mod tests {
     let actual = mapping.map(&config)?;
 
     let expected: Vec<DotFile> = vec![DotFile {
-      name: String::from("file.sh"),
+      name: "file.sh",
       src: PathBuf::from(&base_dir.join("files")),
       dst: PathBuf::from(&home_dir),
     }];
@@ -289,7 +289,7 @@ mod tests {
     let actual = mapping.map(&config)?;
 
     let expected: Vec<DotFile> = vec![DotFile {
-      name: String::from("file.sh"),
+      name: "file.sh",
       src: PathBuf::from(&base_dir.join("files")),
       dst: PathBuf::from(&home_dir),
     }];
@@ -321,7 +321,7 @@ mod tests {
     let actual = mapping.map(&config)?;
 
     let expected: Vec<DotFile> = vec![DotFile {
-      name: String::from("file.sh"),
+      name: "file.sh",
       src: PathBuf::from(&base_dir.join("files/darwin")),
       dst: PathBuf::from(&home_dir),
     }];
@@ -350,7 +350,7 @@ mod tests {
     let actual = mapping.map(&config)?;
 
     let expected: Vec<DotFile> = vec![DotFile {
-      name: String::from("ide-script.sh"),
+      name: "ide-script.sh",
       src: PathBuf::from(&base_dir.join("files/linux")),
       dst: PathBuf::from(&home_dir).join("Code"),
     }];
@@ -379,7 +379,7 @@ mod tests {
     let actual = mapping.map(&config)?;
 
     let expected: Vec<DotFile> = vec![DotFile {
-      name: String::from("file.sh"),
+      name: "file.sh",
       src: PathBuf::from(&base_dir.join("files")),
       dst: PathBuf::from("/etc/some"),
     }];
@@ -415,7 +415,7 @@ mod tests {
       let actual = mapping.map(&config)?;
 
       let expected: Vec<DotFile> = vec![DotFile {
-        name: String::from("file.sh"),
+        name: "file.sh",
         src: PathBuf::from(&base_dir.join("otherstuff")),
         dst: PathBuf::from(&home_dir).join("some"),
       }];
@@ -447,7 +447,7 @@ mod tests {
       let actual = mapping.map(&config)?;
 
       let expected: Vec<DotFile> = vec![DotFile {
-        name: String::from("file.sh"),
+        name: "file.sh",
         src: PathBuf::from(&base_dir).join("otherstuff"),
         dst: PathBuf::from(&home_dir).join("some"),
       }];
@@ -479,7 +479,7 @@ mod tests {
       let actual = mapping.map(&config)?;
 
       let expected: Vec<DotFile> = vec![DotFile {
-        name: String::from("file.sh"),
+        name: "file.sh",
         src: PathBuf::from(&home_dir).join("backup"),
         dst: PathBuf::from(&home_dir).join("some"),
       }];
@@ -511,7 +511,7 @@ mod tests {
       let actual = mapping.map(&config)?;
 
       let expected: Vec<DotFile> = vec![DotFile {
-        name: String::from("file.sh"),
+        name: "file.sh",
         src: PathBuf::from("/my/bucket/with/stuff/by/linux"),
         dst: PathBuf::from(&home_dir).join("some"),
       }];
@@ -543,7 +543,7 @@ mod tests {
       let actual = mapping.map(&config)?;
 
       let expected: Vec<DotFile> = vec![DotFile {
-        name: String::from("file.sh"),
+        name: "file.sh",
         src: PathBuf::from("/my/bucket/with/stuff/by"),
         dst: PathBuf::from(&home_dir).join("some"),
       }];
@@ -575,7 +575,7 @@ mod tests {
       let actual = mapping.map(&config)?;
 
       let expected: Vec<DotFile> = vec![DotFile {
-        name: String::from("file.sh"),
+        name: "file.sh",
         src: PathBuf::from(&base_dir).join("stuff"),
         dst: PathBuf::from(&home_dir).join("some"),
       }];
