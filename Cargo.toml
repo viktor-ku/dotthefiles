@@ -1,5 +1,5 @@
 [package]
-name = "dotthefiles"
+name = "dtf"
 version = "0.1.0"
 authors = ["Viktor Kuroljov <viktor@ku.family>"]
 edition = "2018"
