@@ -12,6 +12,8 @@ use lib::{client_os, User};
 
 mod macros;
 
+mod cmd;
+
 fn main() -> Result<()> {
   let app = App::from_args();
 
@@ -33,6 +35,8 @@ fn main() -> Result<()> {
         home_dir,
         user,
       };
+
+      cmd::ln(&cx)?;
     }
   }
 
