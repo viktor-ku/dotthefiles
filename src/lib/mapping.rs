@@ -1,6 +1,7 @@
 use crate::lib::{client_os, config, DotFile, Render, RenderState};
 use crate::Context;
-use std::io;
+use std::collections::HashMap;
+use std::io::Result;
 
 /// Should return the right directory name to get our files from (pan intended).
 /// Based on the target and currently used OS.
@@ -31,9 +32,9 @@ fn source_dir<'a>(cx: &Context, target: &config::Target) -> Option<&'a str> {
   }
 }
 
-pub fn map<'a>(cx: &Context, config: &'a config::Config) -> io::Result<Vec<DotFile<'a>>> {
-  let mut v: Vec<DotFile> = Vec::with_capacity(32);
+pub fn map<'a>(cx: &Context, config: &'a config::Config) -> Result<HashMap<u32, DotFile<'a>>> {
   let mut id: u32 = 0;
+  let mut ret: HashMap<u32, DotFile<'a>> = HashMap::new();
 
   for section in &config.map {
     let target: &config::Target = {
@@ -64,16 +65,18 @@ pub fn map<'a>(cx: &Context, config: &'a config::Config) -> io::Result<Vec<DotFi
 
       id += 1;
 
-      v.push(DotFile {
+      let dotfile = DotFile {
         id,
         name: &file.name,
         dst: to.render(&state),
         src: from.render(&state),
-      })
+      };
+
+      ret.insert(id, dotfile);
     }
   }
 
-  Ok(v)
+  Ok(ret)
 }
 
 #[cfg(test)]
@@ -81,6 +84,7 @@ mod tests {
   use super::*;
   use crate::lib::{read_yaml, User};
   use pretty_assertions::assert_eq;
+  use std::io;
   use std::path::PathBuf;
 
   fn base_dir(t: &str) -> PathBuf {
@@ -106,6 +110,13 @@ mod tests {
     }
   }
 
+  #[inline]
+  fn to_map(expected: DotFile) -> HashMap<u32, DotFile> {
+    let mut val = HashMap::new();
+    val.insert(expected.id, expected);
+    val
+  }
+
   #[test]
   fn a01() -> io::Result<()> {
     let base_dir = &base_dir("a01");
@@ -125,15 +136,16 @@ mod tests {
 
     let actual = map(&cx, &config)?;
 
-    let expected: Vec<DotFile> = vec![DotFile {
+    let expected = DotFile {
       id: 1,
       name: "file.sh",
       src: PathBuf::from(&base_dir.join("files/linux")),
       dst: PathBuf::from(&home_dir),
-    }];
+    };
 
     assert_eq!(
-      actual, expected,
+      actual,
+      to_map(expected),
       "given the right target it should provide us with the simplest file mapping"
     );
 
@@ -158,8 +170,7 @@ mod tests {
     };
 
     let actual = map(&cx, &config)?;
-
-    let expected: Vec<DotFile> = vec![];
+    let expected = HashMap::new();
 
     assert_eq!(
       actual, expected,
@@ -188,7 +199,7 @@ mod tests {
 
     let actual = map(&cx, &config)?;
 
-    let expected: Vec<DotFile> = vec![];
+    let expected = HashMap::new();
 
     assert_eq!(
       actual, expected,
@@ -217,15 +228,16 @@ mod tests {
 
     let actual = map(&cx, &config)?;
 
-    let expected: Vec<DotFile> = vec![DotFile {
+    let expected = DotFile {
       id: 1,
       name: "file.sh",
       src: PathBuf::from(&base_dir.join("files/darwin")),
       dst: PathBuf::from(&home_dir),
-    }];
+    };
 
     assert_eq!(
-      actual, expected,
+      actual,
+      to_map(expected),
       "should set right os type into the 'from' field"
     );
 
@@ -251,14 +263,18 @@ mod tests {
 
     let actual = map(&cx, &config)?;
 
-    let expected: Vec<DotFile> = vec![DotFile {
+    let expected = DotFile {
       id: 1,
       name: "file.sh",
       src: PathBuf::from(&base_dir.join("files")),
       dst: PathBuf::from(&home_dir),
-    }];
+    };
 
-    assert_eq!(actual, expected, "should read 'any' target correctly");
+    assert_eq!(
+      actual,
+      to_map(expected),
+      "should read 'any' target correctly"
+    );
 
     Ok(())
   }
@@ -282,17 +298,18 @@ mod tests {
 
     let actual = map(&cx, &config)?;
 
-    let expected: Vec<DotFile> = vec![DotFile {
+    let expected = DotFile {
       id: 1,
       name: "file.sh",
       src: PathBuf::from(&base_dir.join("files")),
       dst: PathBuf::from(&home_dir),
-    }];
+    };
 
     println!("\n|> {:}\n", &config_path.to_str().unwrap());
 
     assert_eq!(
-      actual, expected,
+      actual,
+      to_map(expected),
       "when `target` contains `any` in it alongside with other targets, treat it like `any` anyway"
     );
 
@@ -318,17 +335,18 @@ mod tests {
 
     let actual = map(&cx, &config)?;
 
-    let expected: Vec<DotFile> = vec![DotFile {
+    let expected = DotFile {
       id: 1,
       name: "file.sh",
       src: PathBuf::from(&base_dir.join("files")),
       dst: PathBuf::from(&home_dir),
-    }];
+    };
 
     println!("\n|> {:}\n", &config_path.to_str().unwrap());
 
     assert_eq!(
-      actual, expected,
+      actual,
+      to_map(expected),
       "when there is no `target` defined, treat it like `any` by default"
     );
 
@@ -354,16 +372,20 @@ mod tests {
 
     let actual = map(&cx, &config)?;
 
-    let expected: Vec<DotFile> = vec![DotFile {
+    let expected = DotFile {
       id: 1,
       name: "file.sh",
       src: PathBuf::from(&base_dir.join("files/darwin")),
       dst: PathBuf::from(&home_dir),
-    }];
+    };
 
     println!("\n|> {:}\n", &config_path.to_str().unwrap());
 
-    assert_eq!(actual, expected, "should pick the right one out of two");
+    assert_eq!(
+      actual,
+      to_map(expected),
+      "should pick the right one out of two"
+    );
 
     Ok(())
   }
@@ -387,16 +409,20 @@ mod tests {
 
     let actual = map(&cx, &config)?;
 
-    let expected: Vec<DotFile> = vec![DotFile {
+    let expected = DotFile {
       id: 1,
       name: "ide-script.sh",
       src: PathBuf::from(&base_dir.join("files/linux")),
       dst: PathBuf::from(&home_dir).join("Code"),
-    }];
+    };
 
     println!("\n|> {:}\n", &config_path.to_str().unwrap());
 
-    assert_eq!(actual, expected, "should pick the right one out of two");
+    assert_eq!(
+      actual,
+      to_map(expected),
+      "should pick the right one out of two"
+    );
 
     Ok(())
   }
@@ -420,17 +446,18 @@ mod tests {
 
     let actual = map(&cx, &config)?;
 
-    let expected: Vec<DotFile> = vec![DotFile {
+    let expected = DotFile {
       id: 1,
       name: "file.sh",
       src: PathBuf::from(&base_dir.join("files")),
       dst: PathBuf::from("/etc/some"),
-    }];
+    };
 
     println!("\n|> {:}\n", &config_path.to_str().unwrap());
 
     assert_eq!(
-      actual, expected,
+      actual,
+      to_map(expected),
       "should decide to link from files/ to /etc/some"
     );
 
@@ -460,17 +487,17 @@ mod tests {
 
       let actual = map(&cx, &config)?;
 
-      let expected: Vec<DotFile> = vec![DotFile {
+      let expected = DotFile {
         id: 1,
         name: "file.sh",
         src: PathBuf::from(&base_dir.join("otherstuff")),
         dst: PathBuf::from(&home_dir).join("some"),
-      }];
+      };
 
       println!("\n|> {:}\n", &config_path.to_str().unwrap());
 
       assert_eq!(
-        actual, expected,
+        actual, to_map(expected),
         "if `from` field is provided and is a relative path then resolve it relative to the config's location regardless of the client os"
       );
 
@@ -496,17 +523,18 @@ mod tests {
 
       let actual = map(&cx, &config)?;
 
-      let expected: Vec<DotFile> = vec![DotFile {
+      let expected = DotFile {
         id: 1,
         name: "file.sh",
         src: PathBuf::from(&base_dir).join("otherstuff"),
         dst: PathBuf::from(&home_dir).join("some"),
-      }];
+      };
 
       println!("\n|> {:}\n", &config_path.to_str().unwrap());
 
       assert_eq!(
-        actual, expected,
+        actual,
+        to_map(expected),
         "should resolve relative `from` regardless of the target os"
       );
 
@@ -532,17 +560,18 @@ mod tests {
 
       let actual = map(&cx, &config)?;
 
-      let expected: Vec<DotFile> = vec![DotFile {
+      let expected = DotFile {
         id: 1,
         name: "file.sh",
         src: PathBuf::from(&home_dir).join("backup"),
         dst: PathBuf::from(&home_dir).join("some"),
-      }];
+      };
 
       println!("\n|> {:}\n", &config_path.to_str().unwrap());
 
       assert_eq!(
-        actual, expected,
+        actual,
+        to_map(expected),
         "should be able to resolve home dir correctly in the `from` field"
       );
 
@@ -568,17 +597,18 @@ mod tests {
 
       let actual = map(&cx, &config)?;
 
-      let expected: Vec<DotFile> = vec![DotFile {
+      let expected = DotFile {
         id: 1,
         name: "file.sh",
         src: PathBuf::from("/my/bucket/with/stuff/by/linux"),
         dst: PathBuf::from(&home_dir).join("some"),
-      }];
+      };
 
       println!("\n|> {:}\n", &config_path.to_str().unwrap());
 
       assert_eq!(
-        actual, expected,
+        actual,
+        to_map(expected),
         "should look for the absolute path with target folder when a $TARGET variable is present"
       );
 
@@ -604,17 +634,17 @@ mod tests {
 
       let actual = map(&cx, &config)?;
 
-      let expected: Vec<DotFile> = vec![DotFile {
+      let expected = DotFile {
         id: 1,
         name: "file.sh",
         src: PathBuf::from("/my/bucket/with/stuff/by"),
         dst: PathBuf::from(&home_dir).join("some"),
-      }];
+      };
 
       println!("\n|> {:}\n", &config_path.to_str().unwrap());
 
       assert_eq!(
-        actual, expected,
+        actual, to_map(expected),
         "in case there is a $TARGET variable in the `from` field, but the target is any, should look for just the `from` field"
       );
 
@@ -640,17 +670,18 @@ mod tests {
 
       let actual = map(&cx, &config)?;
 
-      let expected: Vec<DotFile> = vec![DotFile {
+      let expected = DotFile {
         id: 1,
         name: "file.sh",
         src: PathBuf::from(&base_dir).join("stuff"),
         dst: PathBuf::from(&home_dir).join("some"),
-      }];
+      };
 
       println!("\n|> {:}\n", &config_path.to_str().unwrap());
 
       assert_eq!(
-        actual, expected,
+        actual,
+        to_map(expected),
         "should just look into the /stuff folder for any file for any platform"
       );
 

@@ -1,23 +1,24 @@
 use crate::lib::{dotfile, sudo, DotFile, Report};
 use crate::Context;
+use std::collections::HashMap;
 use std::io::Result;
 
-pub fn link(cx: &Context, dotfiles: &Vec<DotFile>) -> Result<()> {
-  let ref mut denied: Vec<&DotFile> = Vec::with_capacity(dotfiles.len());
+pub fn link(cx: &Context, dotfiles: &HashMap<u32, DotFile>) -> Result<()> {
+  let ref mut denied: HashMap<u32, &DotFile> = HashMap::new();
   let mut reports: Vec<Report> = Vec::with_capacity(dotfiles.len());
 
-  for dotfile in dotfiles {
+  for (id, dotfile) in dotfiles {
     match dotfile.link(cx, None) {
       Ok(_) => reports.push(Report {
-        dotfile: dotfile.id,
+        dotfile: *id,
         error: None,
       }),
       Err(e) => match e.kind {
         dotfile::ErrorKind::PermissionDenied => {
-          denied.push(dotfile);
+          denied.insert(*id, dotfile);
         }
         _ => reports.push(Report {
-          dotfile: dotfile.id,
+          dotfile: *id,
           error: Some(e),
         }),
       },

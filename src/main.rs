@@ -1,3 +1,4 @@
+use std::collections::HashMap;
 use std::io::Result;
 use structopt::StructOpt;
 
@@ -42,7 +43,7 @@ fn main() -> Result<()> {
       };
 
       if let Some(dotfiles_string) = dotfiles {
-        let dotfiles: Vec<DotFile> = serde_json::from_str(&dotfiles_string).unwrap();
+        let dotfiles: HashMap<u32, DotFile> = serde_json::from_str(&dotfiles_string).unwrap();
 
         cmd::link(&cx, &dotfiles)?;
       } else {
