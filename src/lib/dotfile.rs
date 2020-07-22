@@ -1,5 +1,6 @@
 use crate::Context;
 use serde::{Deserialize, Serialize};
+use std::fmt;
 use std::fs;
 use std::path::PathBuf;
 
@@ -9,12 +10,38 @@ pub enum ErrorSource {
   Dst,
 }
 
+impl fmt::Display for ErrorSource {
+  fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+    match self {
+      ErrorSource::Src => write!(f, "source"),
+      ErrorSource::Dst => write!(f, "destination"),
+    }
+  }
+}
+
 #[derive(Debug, Serialize, Deserialize)]
 pub enum ErrorKind {
   NotFound,
   PermissionDenied,
   AlreadyExists,
   Other,
+}
+
+impl fmt::Display for ErrorKind {
+  fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+    write!(f, "{}", self.as_str())
+  }
+}
+
+impl ErrorKind {
+  pub fn as_str(&self) -> &str {
+    match self {
+      ErrorKind::NotFound => "not found",
+      ErrorKind::PermissionDenied => "permission denied",
+      ErrorKind::AlreadyExists => "already exists",
+      ErrorKind::Other => "unknown error",
+    }
+  }
 }
 
 impl std::convert::From<std::io::ErrorKind> for ErrorKind {
@@ -32,6 +59,12 @@ impl std::convert::From<std::io::ErrorKind> for ErrorKind {
 pub struct Error {
   pub kind: ErrorKind,
   pub source: ErrorSource,
+}
+
+impl std::fmt::Display for Error {
+  fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+    write!(f, "{} {}", self.source, self.kind)
+  }
 }
 
 #[derive(Debug, PartialEq, Eq, Serialize, Deserialize)]

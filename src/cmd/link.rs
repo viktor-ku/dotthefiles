@@ -10,7 +10,7 @@ pub fn link(cx: &Context, dotfiles: &HashMap<u32, DotFile>) -> Result<()> {
   for (id, dotfile) in dotfiles {
     match dotfile.link(cx, None) {
       Ok(_) => reports.push(Report {
-        dotfile: *id,
+        dotfile_id: *id,
         error: None,
       }),
       Err(e) => match e.kind {
@@ -18,7 +18,7 @@ pub fn link(cx: &Context, dotfiles: &HashMap<u32, DotFile>) -> Result<()> {
           denied.insert(*id, dotfile);
         }
         _ => reports.push(Report {
-          dotfile: *id,
+          dotfile_id: *id,
           error: Some(e),
         }),
       },
@@ -31,7 +31,16 @@ pub fn link(cx: &Context, dotfiles: &HashMap<u32, DotFile>) -> Result<()> {
       reports.extend(sreports);
     }
 
-    println!("reports {:#?}", reports);
+    for report in &reports {
+      if report.is_ok() {
+        continue;
+      }
+
+      let dotfile = dotfiles.get(&report.dotfile_id).unwrap();
+      let err = report.error.as_ref().unwrap();
+
+      Report::print(dotfile, err);
+    }
 
     Ok(())
   } else {
