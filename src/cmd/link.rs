@@ -31,15 +31,23 @@ pub fn link(cx: &Context, dotfiles: &HashMap<u32, DotFile>) -> Result<()> {
       reports.extend(sreports);
     }
 
+    let mut exit = 0;
+
     for report in &reports {
       if report.is_ok() {
         continue;
       }
 
+      exit = 1;
+
       let dotfile = dotfiles.get(&report.dotfile_id).unwrap();
       let err = report.error.as_ref().unwrap();
 
       Report::print(dotfile, err);
+    }
+
+    if exit == 1 {
+      std::process::exit(1);
     }
 
     Ok(())
