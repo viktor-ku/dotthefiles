@@ -8,7 +8,7 @@ mod context;
 use context::Context;
 
 mod lib;
-use lib::{client_os, User};
+use lib::{client_os, User, DotFile, read_yaml, config::Config, mapping};
 
 mod macros;
 
@@ -22,8 +22,8 @@ fn main() -> Result<()> {
   let home_dir = &dirs::home_dir().unwrap();
   let user = &User::new();
 
-  match &app {
-    App::Link { config } => {
+  match app {
+    App::Link { config  , dotfiles } => {
       let config_path = &config.canonicalize()?;
       let ref mut base_dir = config_path.clone();
       base_dir.pop();
@@ -36,7 +36,16 @@ fn main() -> Result<()> {
         user,
       };
 
-      cmd::link(&cx)?;
+      if let Some(dotfiles_string) = dotfiles {
+        let dotfiles: Vec<DotFile> = serde_json::from_str(&dotfiles_string).unwrap();
+
+        cmd::link(&cx, &dotfiles)?;
+      } else {
+        let config: Config = read_yaml(&config_path)?;
+        let dotfiles = mapping::map(&cx, &config).unwrap();
+
+        cmd::link(&cx, &dotfiles)?;
+      }
     }
   }
 

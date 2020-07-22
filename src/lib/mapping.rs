@@ -1,93 +1,94 @@
 use crate::lib::{client_os, config, DotFile, Render, RenderState};
+use crate::Context;
 use std::io;
-use std::path::PathBuf;
 
-#[derive(Debug)]
-pub struct Mapping<'a> {
-  pub base_dir: &'a PathBuf,
-  pub client_os: &'a client_os::Type,
-  pub home_dir: &'a PathBuf,
-}
-impl<'a> Mapping<'a> {
-  /// Should return the right directory name to get our files from (pan intended).
-  /// Based on the target and currently used OS.
-  pub fn source_dir(&self, target: &config::Target) -> Option<&str> {
-    match self.client_os {
-      client_os::Type::Linux => {
-        if target == &config::Target::Any {
-          None
-        } else {
-          Some("linux")
-        }
+/// Should return the right directory name to get our files from (pan intended).
+/// Based on the target and currently used OS.
+fn source_dir<'a>(cx: &Context, target: &config::Target) -> Option<&'a str> {
+  match cx.client_os {
+    client_os::Type::Linux => {
+      if target == &config::Target::Any {
+        None
+      } else {
+        Some("linux")
       }
-      client_os::Type::Darwin => {
-        if target == &config::Target::Any {
-          None
-        } else {
-          Some("darwin")
-        }
-      }
-      client_os::Type::Win => {
-        if target == &config::Target::Any {
-          None
-        } else {
-          Some("win")
-        }
-      }
-      _ => panic!("do not know which source directory to use!"),
     }
+    client_os::Type::Darwin => {
+      if target == &config::Target::Any {
+        None
+      } else {
+        Some("darwin")
+      }
+    }
+    client_os::Type::Win => {
+      if target == &config::Target::Any {
+        None
+      } else {
+        Some("win")
+      }
+    }
+    _ => panic!("do not know which source directory to use!"),
   }
+}
 
-  pub fn map(&self, config: &'a config::Config) -> io::Result<Vec<DotFile>> {
-    let mut v: Vec<DotFile> = Vec::with_capacity(32);
+pub fn map<'a>(cx: &Context, config: &'a config::Config) -> io::Result<Vec<DotFile<'a>>> {
+  let mut v: Vec<DotFile> = Vec::with_capacity(32);
 
-    for section in &config.map {
-      let target: &config::Target = {
-        let mut compatible: Vec<&config::Target> = section
-          .target
-          .iter()
-          .filter(|target| target == &self.client_os)
-          .collect();
+  for section in &config.map {
+    let target: &config::Target = {
+      let mut compatible: Vec<&config::Target> = section
+        .target
+        .iter()
+        .filter(|target| target == &cx.client_os)
+        .collect();
 
-        if compatible.is_empty() {
-          continue;
-        }
+      if compatible.is_empty() {
+        continue;
+      }
 
-        compatible.sort_unstable();
+      compatible.sort_unstable();
 
-        *compatible.first().unwrap()
+      *compatible.first().unwrap()
+    };
+
+    for file in &section.files {
+      let to = Render::from(&file.to);
+      let from = Render::from(&section.from);
+
+      let state = RenderState {
+        home_dir: &cx.home_dir,
+        base_dir: &cx.base_dir,
+        source_dir: &source_dir(cx, target),
       };
 
-      for file in &section.files {
-        let to = Render::from(&file.to);
-        let from = Render::from(&section.from);
-
-        let state = RenderState {
-          home_dir: &self.home_dir,
-          base_dir: &self.base_dir,
-          source_dir: &self.source_dir(target),
-        };
-
-        v.push(DotFile {
-          name: &file.name,
-          dst: to.render(&state),
-          src: from.render(&state),
-        })
-      }
+      v.push(DotFile {
+        name: &file.name,
+        dst: to.render(&state),
+        src: from.render(&state),
+      })
     }
-
-    Ok(v)
   }
+
+  Ok(v)
 }
 
 #[cfg(test)]
 mod tests {
   use super::*;
-  use crate::lib::read_yaml;
+  use crate::lib::{read_yaml, User};
   use pretty_assertions::assert_eq;
+  use std::path::PathBuf;
 
   fn base_dir(t: &str) -> PathBuf {
     std::env::current_dir().unwrap().join("examples").join(t)
+  }
+
+  fn user() -> User {
+    User {
+      uid: 101,
+      euid: 101,
+      gid: 20,
+    }
   }
 
   struct FakeHomeDir;
@@ -109,13 +110,15 @@ mod tests {
 
     let config = read_yaml(config_path)?;
 
-    let mapping = Mapping {
+    let cx = Context {
       base_dir,
       home_dir: &home_dir,
       client_os: &client_os::Type::Linux,
+      config_path,
+      user: &user(),
     };
 
-    let actual = mapping.map(&config)?;
+    let actual = map(&cx, &config)?;
 
     let expected: Vec<DotFile> = vec![DotFile {
       name: "file.sh",
@@ -139,13 +142,15 @@ mod tests {
 
     let config = read_yaml(config_path)?;
 
-    let mapping = Mapping {
+    let cx = Context {
       base_dir,
       home_dir: &home_dir,
       client_os: &client_os::Type::Darwin,
+      config_path,
+      user: &user(),
     };
 
-    let actual = mapping.map(&config)?;
+    let actual = map(&cx, &config)?;
 
     let expected: Vec<DotFile> = vec![];
 
@@ -165,13 +170,15 @@ mod tests {
 
     let config = read_yaml(config_path)?;
 
-    let mapping = Mapping {
+    let cx = Context {
       base_dir,
       home_dir: &home_dir,
       client_os: &client_os::Type::Darwin,
+      config_path,
+      user: &user(),
     };
 
-    let actual = mapping.map(&config)?;
+    let actual = map(&cx, &config)?;
 
     let expected: Vec<DotFile> = vec![];
 
@@ -191,13 +198,15 @@ mod tests {
 
     let config = read_yaml(config_path)?;
 
-    let mapping = Mapping {
+    let cx = Context {
       base_dir,
       home_dir: &home_dir,
       client_os: &client_os::Type::Darwin,
+      config_path,
+      user: &user(),
     };
 
-    let actual = mapping.map(&config)?;
+    let actual = map(&cx, &config)?;
 
     let expected: Vec<DotFile> = vec![DotFile {
       name: "file.sh",
@@ -221,13 +230,15 @@ mod tests {
 
     let config = read_yaml(config_path)?;
 
-    let mapping = Mapping {
+    let cx = Context {
       base_dir,
       home_dir: &home_dir,
       client_os: &client_os::Type::Darwin,
+      config_path,
+      user: &user(),
     };
 
-    let actual = mapping.map(&config)?;
+    let actual = map(&cx, &config)?;
 
     let expected: Vec<DotFile> = vec![DotFile {
       name: "file.sh",
@@ -248,13 +259,15 @@ mod tests {
 
     let config = read_yaml(config_path)?;
 
-    let mapping = Mapping {
+    let cx = Context {
       base_dir,
       home_dir: &home_dir,
       client_os: &client_os::Type::Darwin,
+      config_path,
+      user: &user(),
     };
 
-    let actual = mapping.map(&config)?;
+    let actual = map(&cx, &config)?;
 
     let expected: Vec<DotFile> = vec![DotFile {
       name: "file.sh",
@@ -280,13 +293,15 @@ mod tests {
 
     let config = read_yaml(config_path)?;
 
-    let mapping = Mapping {
+    let cx = Context {
       base_dir,
       home_dir: &home_dir,
       client_os: &client_os::Type::Darwin,
+      config_path,
+      user: &user(),
     };
 
-    let actual = mapping.map(&config)?;
+    let actual = map(&cx, &config)?;
 
     let expected: Vec<DotFile> = vec![DotFile {
       name: "file.sh",
@@ -312,13 +327,15 @@ mod tests {
 
     let config = read_yaml(config_path)?;
 
-    let mapping = Mapping {
+    let cx = Context {
       base_dir,
       home_dir: &home_dir,
       client_os: &client_os::Type::Darwin,
+      config_path,
+      user: &user(),
     };
 
-    let actual = mapping.map(&config)?;
+    let actual = map(&cx, &config)?;
 
     let expected: Vec<DotFile> = vec![DotFile {
       name: "file.sh",
@@ -341,13 +358,15 @@ mod tests {
 
     let config = read_yaml(config_path)?;
 
-    let mapping = Mapping {
+    let cx = Context {
       base_dir,
       home_dir: &home_dir,
       client_os: &client_os::Type::Linux,
+      config_path,
+      user: &user(),
     };
 
-    let actual = mapping.map(&config)?;
+    let actual = map(&cx, &config)?;
 
     let expected: Vec<DotFile> = vec![DotFile {
       name: "ide-script.sh",
@@ -370,13 +389,15 @@ mod tests {
 
     let config = read_yaml(config_path)?;
 
-    let mapping = Mapping {
+    let cx = Context {
       base_dir,
       home_dir: &home_dir,
       client_os: &client_os::Type::Linux,
+      config_path,
+      user: &user(),
     };
 
-    let actual = mapping.map(&config)?;
+    let actual = map(&cx, &config)?;
 
     let expected: Vec<DotFile> = vec![DotFile {
       name: "file.sh",
@@ -406,13 +427,15 @@ mod tests {
 
       let config = read_yaml(config_path)?;
 
-      let mapping = Mapping {
+      let cx = Context {
         base_dir,
         home_dir: &home_dir,
         client_os: &client_os::Type::Linux,
+        config_path,
+        user: &user(),
       };
 
-      let actual = mapping.map(&config)?;
+      let actual = map(&cx, &config)?;
 
       let expected: Vec<DotFile> = vec![DotFile {
         name: "file.sh",
@@ -438,13 +461,15 @@ mod tests {
 
       let config = read_yaml(config_path)?;
 
-      let mapping = Mapping {
+      let cx = Context {
         base_dir,
         home_dir: &home_dir,
         client_os: &client_os::Type::Linux,
+        config_path,
+        user: &user(),
       };
 
-      let actual = mapping.map(&config)?;
+      let actual = map(&cx, &config)?;
 
       let expected: Vec<DotFile> = vec![DotFile {
         name: "file.sh",
@@ -470,13 +495,15 @@ mod tests {
 
       let config = read_yaml(config_path)?;
 
-      let mapping = Mapping {
+      let cx = Context {
         base_dir,
         home_dir: &home_dir,
         client_os: &client_os::Type::Linux,
+        config_path,
+        user: &user(),
       };
 
-      let actual = mapping.map(&config)?;
+      let actual = map(&cx, &config)?;
 
       let expected: Vec<DotFile> = vec![DotFile {
         name: "file.sh",
@@ -502,13 +529,15 @@ mod tests {
 
       let config = read_yaml(config_path)?;
 
-      let mapping = Mapping {
+      let cx = Context {
         base_dir,
         home_dir: &home_dir,
         client_os: &client_os::Type::Linux,
+        config_path,
+        user: &user(),
       };
 
-      let actual = mapping.map(&config)?;
+      let actual = map(&cx, &config)?;
 
       let expected: Vec<DotFile> = vec![DotFile {
         name: "file.sh",
@@ -534,13 +563,15 @@ mod tests {
 
       let config = read_yaml(config_path)?;
 
-      let mapping = Mapping {
+      let cx = Context {
         base_dir,
         home_dir: &home_dir,
         client_os: &client_os::Type::Linux,
+        config_path,
+        user: &user(),
       };
 
-      let actual = mapping.map(&config)?;
+      let actual = map(&cx, &config)?;
 
       let expected: Vec<DotFile> = vec![DotFile {
         name: "file.sh",
@@ -566,13 +597,15 @@ mod tests {
 
       let config = read_yaml(config_path)?;
 
-      let mapping = Mapping {
+      let cx = Context {
         base_dir,
         home_dir: &home_dir,
         client_os: &client_os::Type::Linux,
+        config_path,
+        user: &user(),
       };
 
-      let actual = mapping.map(&config)?;
+      let actual = map(&cx, &config)?;
 
       let expected: Vec<DotFile> = vec![DotFile {
         name: "file.sh",
