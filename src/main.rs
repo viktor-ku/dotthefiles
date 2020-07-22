@@ -22,7 +22,7 @@ fn main() -> Result<()> {
   let home_dir = &dirs::home_dir().unwrap();
   let user = &User::new();
 
-  match app {
+  match &app {
     App::Link { config, dotfiles } => {
       let config_path = &config.canonicalize()?;
       let ref mut base_dir = config_path.clone();

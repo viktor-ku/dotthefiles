@@ -14,18 +14,15 @@ pub fn link(cx: &Context, dotfiles: &Vec<DotFile>) -> Result<()> {
         }
         _ => {
           // oh well?
-          println!("error {:#?} for {:#?}", e, dotfile);
         }
       },
     }
   }
 
   if !denied.is_empty() {
-    println!("denied {:#?}", denied);
+    let denied_json = serde_json::to_string(&denied)?;
 
     let mut sudo = std::process::Command::new("sudo");
-
-    let denied_json = serde_json::to_string(&denied)?;
 
     sudo
       .arg("target/debug/dtf")
@@ -34,9 +31,6 @@ pub fn link(cx: &Context, dotfiles: &Vec<DotFile>) -> Result<()> {
       .arg(format!("--dotfiles={}", denied_json));
 
     let res = sudo.output()?;
-
-    println!("{:#?}", sudo);
-    println!("{:#?}", res);
   }
 
   Ok(())
