@@ -8,4 +8,13 @@ pub struct Context<'a> {
   pub client_os: &'a client_os::Type,
   pub home_dir: &'a PathBuf,
   pub user: &'a User,
+
+  /// if main process is running then it should be 0
+  pub child: &'a u8,
+}
+
+impl<'a> Context<'a> {
+  pub fn is_main(&self) -> bool {
+    *self.child == 0
+  }
 }

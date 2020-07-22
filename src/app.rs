@@ -11,5 +11,8 @@ pub enum App {
 
     #[structopt(long)]
     dotfiles: Option<String>,
+
+    #[structopt(long, default_value = "0")]
+    child: u8,
   },
 }

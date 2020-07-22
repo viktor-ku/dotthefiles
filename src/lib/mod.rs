@@ -19,5 +19,8 @@ pub use question::Question;
 mod user;
 pub use user::User;
 
-mod link;
-pub use link::link;
+mod sudo;
+pub use sudo::sudo;
+
+mod report;
+pub use report::Report;

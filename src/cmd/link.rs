@@ -1,37 +1,41 @@
-use crate::lib::{dotfile, DotFile};
+use crate::lib::{dotfile, sudo, DotFile, Report};
 use crate::Context;
 use std::io::Result;
 
 pub fn link(cx: &Context, dotfiles: &Vec<DotFile>) -> Result<()> {
   let ref mut denied: Vec<&DotFile> = Vec::with_capacity(dotfiles.len());
+  let mut reports: Vec<Report> = Vec::with_capacity(dotfiles.len());
 
   for dotfile in dotfiles {
     match dotfile.link(cx, None) {
-      Ok(_) => {}
+      Ok(_) => reports.push(Report {
+        dotfile: dotfile.id,
+        error: None,
+      }),
       Err(e) => match e.kind {
         dotfile::ErrorKind::PermissionDenied => {
           denied.push(dotfile);
         }
-        _ => {
-          // oh well?
-        }
+        _ => reports.push(Report {
+          dotfile: dotfile.id,
+          error: Some(e),
+        }),
       },
     }
   }
 
-  if !denied.is_empty() {
-    let denied_json = serde_json::to_string(&denied)?;
+  if cx.is_main() {
+    if !denied.is_empty() {
+      let sreports = sudo(cx, denied)?;
+      reports.extend(sreports);
+    }
 
-    let mut sudo = std::process::Command::new("sudo");
+    println!("reports {:#?}", reports);
 
-    sudo
-      .arg("target/debug/dtf")
-      .arg("ln")
-      .arg(cx.config_path)
-      .arg(format!("--dotfiles={}", denied_json));
-
-    let res = sudo.output()?;
+    Ok(())
+  } else {
+    let stdout = serde_json::to_string(&reports).unwrap();
+    println!("{}", stdout);
+    Ok(())
   }
-
-  Ok(())
 }

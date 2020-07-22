@@ -33,6 +33,7 @@ fn source_dir<'a>(cx: &Context, target: &config::Target) -> Option<&'a str> {
 
 pub fn map<'a>(cx: &Context, config: &'a config::Config) -> io::Result<Vec<DotFile<'a>>> {
   let mut v: Vec<DotFile> = Vec::with_capacity(32);
+  let mut id: u32 = 0;
 
   for section in &config.map {
     let target: &config::Target = {
@@ -61,7 +62,10 @@ pub fn map<'a>(cx: &Context, config: &'a config::Config) -> io::Result<Vec<DotFi
         source_dir: &source_dir(cx, target),
       };
 
+      id += 1;
+
       v.push(DotFile {
+        id,
         name: &file.name,
         dst: to.render(&state),
         src: from.render(&state),
@@ -116,11 +120,13 @@ mod tests {
       client_os: &client_os::Type::Linux,
       config_path,
       user: &user(),
+      child: &0,
     };
 
     let actual = map(&cx, &config)?;
 
     let expected: Vec<DotFile> = vec![DotFile {
+      id: 1,
       name: "file.sh",
       src: PathBuf::from(&base_dir.join("files/linux")),
       dst: PathBuf::from(&home_dir),
@@ -148,6 +154,7 @@ mod tests {
       client_os: &client_os::Type::Darwin,
       config_path,
       user: &user(),
+      child: &0,
     };
 
     let actual = map(&cx, &config)?;
@@ -176,6 +183,7 @@ mod tests {
       client_os: &client_os::Type::Darwin,
       config_path,
       user: &user(),
+      child: &0,
     };
 
     let actual = map(&cx, &config)?;
@@ -204,11 +212,13 @@ mod tests {
       client_os: &client_os::Type::Darwin,
       config_path,
       user: &user(),
+      child: &0,
     };
 
     let actual = map(&cx, &config)?;
 
     let expected: Vec<DotFile> = vec![DotFile {
+      id: 1,
       name: "file.sh",
       src: PathBuf::from(&base_dir.join("files/darwin")),
       dst: PathBuf::from(&home_dir),
@@ -236,11 +246,13 @@ mod tests {
       client_os: &client_os::Type::Darwin,
       config_path,
       user: &user(),
+      child: &0,
     };
 
     let actual = map(&cx, &config)?;
 
     let expected: Vec<DotFile> = vec![DotFile {
+      id: 1,
       name: "file.sh",
       src: PathBuf::from(&base_dir.join("files")),
       dst: PathBuf::from(&home_dir),
@@ -265,11 +277,13 @@ mod tests {
       client_os: &client_os::Type::Darwin,
       config_path,
       user: &user(),
+      child: &0,
     };
 
     let actual = map(&cx, &config)?;
 
     let expected: Vec<DotFile> = vec![DotFile {
+      id: 1,
       name: "file.sh",
       src: PathBuf::from(&base_dir.join("files")),
       dst: PathBuf::from(&home_dir),
@@ -299,11 +313,13 @@ mod tests {
       client_os: &client_os::Type::Darwin,
       config_path,
       user: &user(),
+      child: &0,
     };
 
     let actual = map(&cx, &config)?;
 
     let expected: Vec<DotFile> = vec![DotFile {
+      id: 1,
       name: "file.sh",
       src: PathBuf::from(&base_dir.join("files")),
       dst: PathBuf::from(&home_dir),
@@ -333,11 +349,13 @@ mod tests {
       client_os: &client_os::Type::Darwin,
       config_path,
       user: &user(),
+      child: &0,
     };
 
     let actual = map(&cx, &config)?;
 
     let expected: Vec<DotFile> = vec![DotFile {
+      id: 1,
       name: "file.sh",
       src: PathBuf::from(&base_dir.join("files/darwin")),
       dst: PathBuf::from(&home_dir),
@@ -364,11 +382,13 @@ mod tests {
       client_os: &client_os::Type::Linux,
       config_path,
       user: &user(),
+      child: &0,
     };
 
     let actual = map(&cx, &config)?;
 
     let expected: Vec<DotFile> = vec![DotFile {
+      id: 1,
       name: "ide-script.sh",
       src: PathBuf::from(&base_dir.join("files/linux")),
       dst: PathBuf::from(&home_dir).join("Code"),
@@ -395,11 +415,13 @@ mod tests {
       client_os: &client_os::Type::Linux,
       config_path,
       user: &user(),
+      child: &0,
     };
 
     let actual = map(&cx, &config)?;
 
     let expected: Vec<DotFile> = vec![DotFile {
+      id: 1,
       name: "file.sh",
       src: PathBuf::from(&base_dir.join("files")),
       dst: PathBuf::from("/etc/some"),
@@ -433,11 +455,13 @@ mod tests {
         client_os: &client_os::Type::Linux,
         config_path,
         user: &user(),
+        child: &0,
       };
 
       let actual = map(&cx, &config)?;
 
       let expected: Vec<DotFile> = vec![DotFile {
+        id: 1,
         name: "file.sh",
         src: PathBuf::from(&base_dir.join("otherstuff")),
         dst: PathBuf::from(&home_dir).join("some"),
@@ -467,11 +491,13 @@ mod tests {
         client_os: &client_os::Type::Linux,
         config_path,
         user: &user(),
+        child: &0,
       };
 
       let actual = map(&cx, &config)?;
 
       let expected: Vec<DotFile> = vec![DotFile {
+        id: 1,
         name: "file.sh",
         src: PathBuf::from(&base_dir).join("otherstuff"),
         dst: PathBuf::from(&home_dir).join("some"),
@@ -501,11 +527,13 @@ mod tests {
         client_os: &client_os::Type::Linux,
         config_path,
         user: &user(),
+        child: &0,
       };
 
       let actual = map(&cx, &config)?;
 
       let expected: Vec<DotFile> = vec![DotFile {
+        id: 1,
         name: "file.sh",
         src: PathBuf::from(&home_dir).join("backup"),
         dst: PathBuf::from(&home_dir).join("some"),
@@ -535,11 +563,13 @@ mod tests {
         client_os: &client_os::Type::Linux,
         config_path,
         user: &user(),
+        child: &0,
       };
 
       let actual = map(&cx, &config)?;
 
       let expected: Vec<DotFile> = vec![DotFile {
+        id: 1,
         name: "file.sh",
         src: PathBuf::from("/my/bucket/with/stuff/by/linux"),
         dst: PathBuf::from(&home_dir).join("some"),
@@ -569,11 +599,13 @@ mod tests {
         client_os: &client_os::Type::Linux,
         config_path,
         user: &user(),
+        child: &0,
       };
 
       let actual = map(&cx, &config)?;
 
       let expected: Vec<DotFile> = vec![DotFile {
+        id: 1,
         name: "file.sh",
         src: PathBuf::from("/my/bucket/with/stuff/by"),
         dst: PathBuf::from(&home_dir).join("some"),
@@ -603,11 +635,13 @@ mod tests {
         client_os: &client_os::Type::Linux,
         config_path,
         user: &user(),
+        child: &0,
       };
 
       let actual = map(&cx, &config)?;
 
       let expected: Vec<DotFile> = vec![DotFile {
+        id: 1,
         name: "file.sh",
         src: PathBuf::from(&base_dir).join("stuff"),
         dst: PathBuf::from(&home_dir).join("some"),

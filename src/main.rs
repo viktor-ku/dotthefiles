@@ -23,7 +23,11 @@ fn main() -> Result<()> {
   let user = &User::new();
 
   match &app {
-    App::Link { config, dotfiles } => {
+    App::Link {
+      config,
+      dotfiles,
+      child,
+    } => {
       let config_path = &config.canonicalize()?;
       let ref mut base_dir = config_path.clone();
       base_dir.pop();
@@ -34,6 +38,7 @@ fn main() -> Result<()> {
         client_os,
         home_dir,
         user,
+        child,
       };
 
       if let Some(dotfiles_string) = dotfiles {
