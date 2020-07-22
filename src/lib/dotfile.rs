@@ -3,15 +3,34 @@ use serde::{Deserialize, Serialize};
 use std::fs;
 use std::path::PathBuf;
 
-#[derive(Debug)]
+#[derive(Debug, Serialize, Deserialize)]
 pub enum ErrorSource {
   Src,
   Dst,
 }
 
-#[derive(Debug)]
+#[derive(Debug, Serialize, Deserialize)]
+pub enum ErrorKind {
+  NotFound,
+  PermissionDenied,
+  AlreadyExists,
+  Other,
+}
+
+impl std::convert::From<std::io::ErrorKind> for ErrorKind {
+  fn from(io_err_kind: std::io::ErrorKind) -> Self {
+    match &io_err_kind {
+      std::io::ErrorKind::NotFound => Self::NotFound,
+      std::io::ErrorKind::PermissionDenied => Self::PermissionDenied,
+      std::io::ErrorKind::AlreadyExists => Self::AlreadyExists,
+      _ => Self::Other,
+    }
+  }
+}
+
+#[derive(Debug, Serialize, Deserialize)]
 pub struct Error {
-  pub kind: std::io::ErrorKind,
+  pub kind: ErrorKind,
   pub source: ErrorSource,
 }
 
@@ -43,7 +62,7 @@ impl<'a> DotFile<'a> {
         Err(e) => {
           return Err(Error {
             source: ErrorSource::Src,
-            kind: e.kind(),
+            kind: e.kind().into(),
           })
         }
       }
@@ -55,7 +74,7 @@ impl<'a> DotFile<'a> {
         std::io::ErrorKind::AlreadyExists => self.link(cx, Some(())),
         _ => Err(Error {
           source: ErrorSource::Dst,
-          kind: e.kind(),
+          kind: e.kind().into(),
         }),
       },
     }

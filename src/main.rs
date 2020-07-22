@@ -8,7 +8,7 @@ mod context;
 use context::Context;
 
 mod lib;
-use lib::{client_os, User, DotFile, read_yaml, config::Config, mapping};
+use lib::{client_os, config::Config, mapping, read_yaml, DotFile, User};
 
 mod macros;
 
@@ -23,7 +23,7 @@ fn main() -> Result<()> {
   let user = &User::new();
 
   match app {
-    App::Link { config  , dotfiles } => {
+    App::Link { config, dotfiles } => {
       let config_path = &config.canonicalize()?;
       let ref mut base_dir = config_path.clone();
       base_dir.pop();

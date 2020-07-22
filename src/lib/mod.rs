@@ -10,7 +10,7 @@ pub mod client_os;
 mod render;
 pub use render::{Render, RenderState};
 
-mod dotfile;
+pub mod dotfile;
 pub use dotfile::DotFile;
 
 mod question;
