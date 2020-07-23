@@ -1,5 +1,4 @@
 use crate::Context;
-use colored::Colorize;
 use serde::{Deserialize, Serialize};
 use std::fmt;
 use std::fs;
