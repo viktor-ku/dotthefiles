@@ -11,8 +11,6 @@ use context::Context;
 mod lib;
 use lib::{client_os, config::Config, mapping, read_yaml, DotFile, User};
 
-mod macros;
-
 mod cmd;
 
 fn main() -> Result<()> {
