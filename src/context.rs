@@ -1,4 +1,4 @@
-use crate::lib::{client_os, User};
+use crate::lib::client_os;
 use std::path::PathBuf;
 
 #[derive(Debug)]
@@ -7,7 +7,6 @@ pub struct Context<'a> {
   pub base_dir: &'a PathBuf,
   pub client_os: &'a client_os::Type,
   pub home_dir: &'a PathBuf,
-  pub user: &'a User,
 
   /// if main process is running then it should be 0
   pub child: &'a u8,

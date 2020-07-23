@@ -82,21 +82,13 @@ pub fn map<'a>(cx: &Context, config: &'a config::Config) -> Result<HashMap<u32, 
 #[cfg(test)]
 mod tests {
   use super::*;
-  use crate::lib::{read_yaml, User};
+  use crate::lib::read_yaml;
   use pretty_assertions::assert_eq;
   use std::io;
   use std::path::PathBuf;
 
   fn base_dir(t: &str) -> PathBuf {
     std::env::current_dir().unwrap().join("examples").join(t)
-  }
-
-  fn user() -> User {
-    User {
-      uid: 101,
-      euid: 101,
-      gid: 20,
-    }
   }
 
   struct FakeHomeDir;
@@ -130,7 +122,6 @@ mod tests {
       home_dir: &home_dir,
       client_os: &client_os::Type::Linux,
       config_path,
-      user: &user(),
       child: &0,
     };
 
@@ -165,7 +156,6 @@ mod tests {
       home_dir: &home_dir,
       client_os: &client_os::Type::Darwin,
       config_path,
-      user: &user(),
       child: &0,
     };
 
@@ -193,7 +183,6 @@ mod tests {
       home_dir: &home_dir,
       client_os: &client_os::Type::Darwin,
       config_path,
-      user: &user(),
       child: &0,
     };
 
@@ -222,7 +211,6 @@ mod tests {
       home_dir: &home_dir,
       client_os: &client_os::Type::Darwin,
       config_path,
-      user: &user(),
       child: &0,
     };
 
@@ -257,7 +245,6 @@ mod tests {
       home_dir: &home_dir,
       client_os: &client_os::Type::Darwin,
       config_path,
-      user: &user(),
       child: &0,
     };
 
@@ -292,7 +279,6 @@ mod tests {
       home_dir: &home_dir,
       client_os: &client_os::Type::Darwin,
       config_path,
-      user: &user(),
       child: &0,
     };
 
@@ -329,7 +315,6 @@ mod tests {
       home_dir: &home_dir,
       client_os: &client_os::Type::Darwin,
       config_path,
-      user: &user(),
       child: &0,
     };
 
@@ -366,7 +351,6 @@ mod tests {
       home_dir: &home_dir,
       client_os: &client_os::Type::Darwin,
       config_path,
-      user: &user(),
       child: &0,
     };
 
@@ -403,7 +387,6 @@ mod tests {
       home_dir: &home_dir,
       client_os: &client_os::Type::Linux,
       config_path,
-      user: &user(),
       child: &0,
     };
 
@@ -440,7 +423,6 @@ mod tests {
       home_dir: &home_dir,
       client_os: &client_os::Type::Linux,
       config_path,
-      user: &user(),
       child: &0,
     };
 
@@ -481,7 +463,6 @@ mod tests {
         home_dir: &home_dir,
         client_os: &client_os::Type::Linux,
         config_path,
-        user: &user(),
         child: &0,
       };
 
@@ -517,7 +498,6 @@ mod tests {
         home_dir: &home_dir,
         client_os: &client_os::Type::Linux,
         config_path,
-        user: &user(),
         child: &0,
       };
 
@@ -554,7 +534,6 @@ mod tests {
         home_dir: &home_dir,
         client_os: &client_os::Type::Linux,
         config_path,
-        user: &user(),
         child: &0,
       };
 
@@ -591,7 +570,6 @@ mod tests {
         home_dir: &home_dir,
         client_os: &client_os::Type::Linux,
         config_path,
-        user: &user(),
         child: &0,
       };
 
@@ -628,7 +606,6 @@ mod tests {
         home_dir: &home_dir,
         client_os: &client_os::Type::Linux,
         config_path,
-        user: &user(),
         child: &0,
       };
 
@@ -664,7 +641,6 @@ mod tests {
         home_dir: &home_dir,
         client_os: &client_os::Type::Linux,
         config_path,
-        user: &user(),
         child: &0,
       };
 

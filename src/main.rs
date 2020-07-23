@@ -9,7 +9,7 @@ mod context;
 use context::Context;
 
 mod lib;
-use lib::{client_os, config::Config, mapping, read_yaml, DotFile, User};
+use lib::{client_os, config::Config, mapping, read_yaml, DotFile};
 
 mod cmd;
 
@@ -19,7 +19,6 @@ fn main() -> Result<()> {
   let os_info = os_info::get().os_type();
   let client_os = &client_os::Type::from(&os_info);
   let home_dir = &dirs::home_dir().unwrap();
-  let user = &User::new();
 
   match &app {
     App::Link {
@@ -36,7 +35,6 @@ fn main() -> Result<()> {
         base_dir,
         client_os,
         home_dir,
-        user,
         child,
       };
 

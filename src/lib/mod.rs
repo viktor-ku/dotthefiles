@@ -13,9 +13,6 @@ pub use render::{Render, RenderState};
 pub mod dotfile;
 pub use dotfile::DotFile;
 
-mod user;
-pub use user::User;
-
 mod sudo;
 pub use sudo::sudo;
 
