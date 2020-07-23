@@ -1,23 +1,9 @@
 use crate::Context;
+use colored::Colorize;
 use serde::{Deserialize, Serialize};
 use std::fmt;
 use std::fs;
 use std::path::PathBuf;
-
-#[derive(Debug, Serialize, Deserialize)]
-pub enum ErrorSource {
-  Src,
-  Dst,
-}
-
-impl fmt::Display for ErrorSource {
-  fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-    match self {
-      ErrorSource::Src => write!(f, "source"),
-      ErrorSource::Dst => write!(f, "destination"),
-    }
-  }
-}
 
 #[derive(Debug, Serialize, Deserialize)]
 pub enum ErrorKind {
@@ -27,44 +13,17 @@ pub enum ErrorKind {
   Other,
 }
 
-impl fmt::Display for ErrorKind {
-  fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-    write!(f, "{}", self.as_str())
-  }
-}
-
-impl ErrorKind {
-  pub fn as_str(&self) -> &str {
-    match self {
-      ErrorKind::NotFound => "not found",
-      ErrorKind::PermissionDenied => "permission denied",
-      ErrorKind::AlreadyExists => "already exists",
-      ErrorKind::Other => "unknown error",
-    }
-  }
-}
-
-impl std::convert::From<std::io::ErrorKind> for ErrorKind {
-  fn from(io_err_kind: std::io::ErrorKind) -> Self {
-    match &io_err_kind {
-      std::io::ErrorKind::NotFound => Self::NotFound,
-      std::io::ErrorKind::PermissionDenied => Self::PermissionDenied,
-      std::io::ErrorKind::AlreadyExists => Self::AlreadyExists,
-      _ => Self::Other,
-    }
-  }
+#[derive(Debug, Serialize, Deserialize)]
+pub enum ErrorStage {
+  RemoveFile,
+  HardLink,
 }
 
 #[derive(Debug, Serialize, Deserialize)]
 pub struct Error {
   pub kind: ErrorKind,
-  pub source: ErrorSource,
-}
-
-impl std::fmt::Display for Error {
-  fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-    write!(f, "{} {}", self.source, self.kind)
-  }
+  pub stage: ErrorStage,
+  pub message: String,
 }
 
 #[derive(Debug, PartialEq, Eq, Serialize, Deserialize)]
@@ -95,8 +54,9 @@ impl<'a> DotFile<'a> {
         Ok(_) => {}
         Err(e) => {
           return Err(Error {
-            source: ErrorSource::Src,
             kind: e.kind().into(),
+            message: e.to_string(),
+            stage: ErrorStage::RemoveFile,
           })
         }
       }
@@ -106,11 +66,43 @@ impl<'a> DotFile<'a> {
       Ok(_) => Ok(()),
       Err(e) => match e.kind() {
         std::io::ErrorKind::AlreadyExists => self.link(cx, Some(())),
-        _ => Err(Error {
-          source: ErrorSource::Dst,
+        std::io::ErrorKind::NotFound => Err(Error {
           kind: e.kind().into(),
+          message: "source file was not found".to_owned(),
+          stage: ErrorStage::HardLink,
+        }),
+        _ => Err(Error {
+          kind: e.kind().into(),
+          message: e.to_string(),
+          stage: ErrorStage::HardLink,
         }),
       },
+    }
+  }
+}
+
+impl std::convert::From<std::io::ErrorKind> for ErrorKind {
+  fn from(io_err_kind: std::io::ErrorKind) -> Self {
+    match &io_err_kind {
+      std::io::ErrorKind::NotFound => Self::NotFound,
+      std::io::ErrorKind::PermissionDenied => Self::PermissionDenied,
+      std::io::ErrorKind::AlreadyExists => Self::AlreadyExists,
+      _ => Self::Other,
+    }
+  }
+}
+
+impl fmt::Display for Error {
+  fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+    write!(f, "{}", self.message)
+  }
+}
+
+impl fmt::Display for ErrorStage {
+  fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+    match self {
+      ErrorStage::RemoveFile => write!(f, "remove destination file"),
+      ErrorStage::HardLink => write!(f, "make a hard link"),
     }
   }
 }

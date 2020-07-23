@@ -14,19 +14,38 @@ impl Report {
   }
 
   pub fn print(dotfile: &DotFile, err: &dotfile::Error) {
-    println!("- {}", dotfile.name);
-    println!("  {}: {}", "Err".red(), err);
-    match err.source {
-      dotfile::ErrorSource::Src => {
+    println!("|> {}: {}", dotfile.name.bold(), err.message.red());
+    println!("   - Error occured while trying to {}", err.stage);
+    match err.stage {
+      dotfile::ErrorStage::HardLink => {
         println!(
-          "       {}",
-          dotfile.src.as_os_str().to_str().unwrap().dimmed()
+          "     from: {}",
+          dotfile
+            .src_file_path()
+            .as_os_str()
+            .to_str()
+            .unwrap()
+            .dimmed()
+        );
+        println!(
+          "     to  : {}",
+          dotfile
+            .dst_file_path()
+            .as_os_str()
+            .to_str()
+            .unwrap()
+            .dimmed()
         );
       }
-      dotfile::ErrorSource::Dst => {
+      dotfile::ErrorStage::RemoveFile => {
         println!(
-          "       {}",
-          dotfile.dst.as_os_str().to_str().unwrap().dimmed()
+          "     {}",
+          dotfile
+            .dst_file_path()
+            .as_os_str()
+            .to_str()
+            .unwrap()
+            .dimmed()
         );
       }
     }
