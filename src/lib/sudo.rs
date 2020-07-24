@@ -1,5 +1,5 @@
 use crate::lib::{DotFile, Report};
-use crate::Context;
+use crate::{Context, CHILD_PARAM};
 use std::collections::HashMap;
 use std::io::prelude::{Read, Write};
 use std::io::Result;
@@ -10,9 +10,9 @@ pub fn sudo<'a>(cx: &Context, dotfiles: &HashMap<u32, &DotFile>) -> Result<Vec<R
 
   let sudo = Command::new("sudo")
     .arg("target/debug/dtf")
+    .arg(CHILD_PARAM)
     .arg("ln")
     .arg(cx.config_path)
-    .arg("--child=1")
     .stdin(Stdio::piped())
     .stdout(Stdio::piped())
     .spawn()?;

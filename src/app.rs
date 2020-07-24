@@ -8,8 +8,5 @@ pub enum App {
   Link {
     #[structopt(name = "config-path", parse(from_os_str))]
     config: PathBuf,
-
-    #[structopt(long, default_value = "0")]
-    child: u8,
   },
 }

@@ -122,7 +122,7 @@ mod tests {
       home_dir: &home_dir,
       client_os: &client_os::Type::Linux,
       config_path,
-      child: &0,
+      child: true,
     };
 
     let actual = map(&cx, &config)?;
@@ -156,7 +156,7 @@ mod tests {
       home_dir: &home_dir,
       client_os: &client_os::Type::Darwin,
       config_path,
-      child: &0,
+      child: true,
     };
 
     let actual = map(&cx, &config)?;
@@ -183,7 +183,7 @@ mod tests {
       home_dir: &home_dir,
       client_os: &client_os::Type::Darwin,
       config_path,
-      child: &0,
+      child: true,
     };
 
     let actual = map(&cx, &config)?;
@@ -211,7 +211,7 @@ mod tests {
       home_dir: &home_dir,
       client_os: &client_os::Type::Darwin,
       config_path,
-      child: &0,
+      child: true,
     };
 
     let actual = map(&cx, &config)?;
@@ -245,7 +245,7 @@ mod tests {
       home_dir: &home_dir,
       client_os: &client_os::Type::Darwin,
       config_path,
-      child: &0,
+      child: true,
     };
 
     let actual = map(&cx, &config)?;
@@ -279,7 +279,7 @@ mod tests {
       home_dir: &home_dir,
       client_os: &client_os::Type::Darwin,
       config_path,
-      child: &0,
+      child: true,
     };
 
     let actual = map(&cx, &config)?;
@@ -315,7 +315,7 @@ mod tests {
       home_dir: &home_dir,
       client_os: &client_os::Type::Darwin,
       config_path,
-      child: &0,
+      child: true,
     };
 
     let actual = map(&cx, &config)?;
@@ -351,7 +351,7 @@ mod tests {
       home_dir: &home_dir,
       client_os: &client_os::Type::Darwin,
       config_path,
-      child: &0,
+      child: true,
     };
 
     let actual = map(&cx, &config)?;
@@ -387,7 +387,7 @@ mod tests {
       home_dir: &home_dir,
       client_os: &client_os::Type::Linux,
       config_path,
-      child: &0,
+      child: true,
     };
 
     let actual = map(&cx, &config)?;
@@ -423,7 +423,7 @@ mod tests {
       home_dir: &home_dir,
       client_os: &client_os::Type::Linux,
       config_path,
-      child: &0,
+      child: true,
     };
 
     let actual = map(&cx, &config)?;
@@ -463,7 +463,7 @@ mod tests {
         home_dir: &home_dir,
         client_os: &client_os::Type::Linux,
         config_path,
-        child: &0,
+        child: true,
       };
 
       let actual = map(&cx, &config)?;
@@ -498,7 +498,7 @@ mod tests {
         home_dir: &home_dir,
         client_os: &client_os::Type::Linux,
         config_path,
-        child: &0,
+        child: true,
       };
 
       let actual = map(&cx, &config)?;
@@ -534,7 +534,7 @@ mod tests {
         home_dir: &home_dir,
         client_os: &client_os::Type::Linux,
         config_path,
-        child: &0,
+        child: true,
       };
 
       let actual = map(&cx, &config)?;
@@ -570,7 +570,7 @@ mod tests {
         home_dir: &home_dir,
         client_os: &client_os::Type::Linux,
         config_path,
-        child: &0,
+        child: true,
       };
 
       let actual = map(&cx, &config)?;
@@ -606,7 +606,7 @@ mod tests {
         home_dir: &home_dir,
         client_os: &client_os::Type::Linux,
         config_path,
-        child: &0,
+        child: true,
       };
 
       let actual = map(&cx, &config)?;
@@ -641,7 +641,7 @@ mod tests {
         home_dir: &home_dir,
         client_os: &client_os::Type::Linux,
         config_path,
-        child: &0,
+        child: true,
       };
 
       let actual = map(&cx, &config)?;

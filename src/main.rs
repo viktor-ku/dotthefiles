@@ -13,15 +13,24 @@ use lib::{client_os, config::Config, mapping, read_yaml, DotFile};
 
 mod cmd;
 
+mod cnst;
+pub use cnst::CHILD_PARAM;
+
 fn main() -> Result<()> {
-  let app = App::from_args();
+  let args: Vec<String> = std::env::args().filter(|arg| arg != CHILD_PARAM).collect();
+  let app = App::from_iter(args);
 
   let os_info = os_info::get().os_type();
   let client_os = &client_os::Type::from(&os_info);
   let home_dir = &dirs::home_dir().unwrap();
 
+  let child: bool = match std::env::args().find(|arg| arg == CHILD_PARAM) {
+    None => false,
+    Some(_) => true,
+  };
+
   match &app {
-    App::Link { config, child } => {
+    App::Link { config } => {
       let config_path = &config.canonicalize()?;
       let ref mut base_dir = config_path.clone();
       base_dir.pop();
