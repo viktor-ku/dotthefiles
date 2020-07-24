@@ -20,12 +20,12 @@ impl App {
 }
 
 mod cmd;
-pub use cmd::link;
+pub use cmd::*;
 
 mod sudo;
-pub use sudo::sudo;
+use sudo::sudo;
 
 mod report;
-pub use report::Report;
+use report::Report;
 
-pub mod hard_link;
+mod hard_link;
