@@ -1,8 +1,7 @@
-use std::collections::HashMap;
-use std::io::Result;
-
 use cli::{self, App, Cli};
 use dtflib::{client_os, Context};
+use parser::Parser;
+use std::io::Result;
 
 fn main() -> Result<()> {
   let args: Vec<String> = std::env::args()
@@ -33,16 +32,17 @@ fn main() -> Result<()> {
         child,
       };
 
+      let mut parser = Parser::with(&cx);
+
       if cx.is_main() {
-        let config: parser::config::Config = parser::read_yaml(&config_path)?;
-        let dotfiles = parser::mapping::map(&cx, &config).unwrap();
+        let dotfiles = parser.from_path(&config_path)?.parse()?;
 
         cli::link(&cx, &dotfiles)?;
       } else {
         let mut dotfiles_json = String::with_capacity(256);
         std::io::stdin().read_line(&mut dotfiles_json)?;
 
-        let dotfiles: HashMap<u32, dtflib::DotFile> = serde_json::from_str(&dotfiles_json).unwrap();
+        let dotfiles = parser.from_json(&dotfiles_json).parse()?;
 
         cli::link(&cx, &dotfiles)?;
       }
