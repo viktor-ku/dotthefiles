@@ -21,11 +21,7 @@ fn main() -> Result<()> {
   let home_dir = &dirs::home_dir().unwrap();
 
   match &app {
-    App::Link {
-      config,
-      dotfiles,
-      child,
-    } => {
+    App::Link { config, child } => {
       let config_path = &config.canonicalize()?;
       let ref mut base_dir = config_path.clone();
       base_dir.pop();
@@ -38,13 +34,16 @@ fn main() -> Result<()> {
         child,
       };
 
-      if let Some(dotfiles_string) = dotfiles {
-        let dotfiles: HashMap<u32, DotFile> = serde_json::from_str(&dotfiles_string).unwrap();
+      if cx.is_main() {
+        let config: Config = read_yaml(&config_path)?;
+        let dotfiles = mapping::map(&cx, &config).unwrap();
 
         cmd::link(&cx, &dotfiles)?;
       } else {
-        let config: Config = read_yaml(&config_path)?;
-        let dotfiles = mapping::map(&cx, &config).unwrap();
+        let mut dotfiles_json = String::with_capacity(256);
+        std::io::stdin().read_line(&mut dotfiles_json)?;
+
+        let dotfiles: HashMap<u32, DotFile> = serde_json::from_str(&dotfiles_json).unwrap();
 
         cmd::link(&cx, &dotfiles)?;
       }

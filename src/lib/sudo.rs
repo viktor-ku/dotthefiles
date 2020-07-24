@@ -1,23 +1,27 @@
 use crate::lib::{DotFile, Report};
 use crate::Context;
 use std::collections::HashMap;
+use std::io::prelude::{Read, Write};
 use std::io::Result;
+use std::process::{Command, Stdio};
 
 pub fn sudo<'a>(cx: &Context, dotfiles: &HashMap<u32, &DotFile>) -> Result<Vec<Report>> {
-  let encoded = serde_json::to_string(dotfiles)?;
+  let dotfiles_json = serde_json::to_string(dotfiles)?;
 
-  let mut sudo = std::process::Command::new("sudo");
-  sudo
+  let sudo = Command::new("sudo")
     .arg("target/debug/dtf")
     .arg("ln")
     .arg(cx.config_path)
-    .arg(format!("--dotfiles={}", encoded))
-    .arg("--child=1");
+    .arg("--child=1")
+    .stdin(Stdio::piped())
+    .stdout(Stdio::piped())
+    .spawn()?;
 
-  let res = sudo.output()?;
+  sudo.stdin.unwrap().write_all(dotfiles_json.as_bytes())?;
 
-  let stdout = std::str::from_utf8(&res.stdout).unwrap();
-  let reports: Vec<Report> = serde_json::from_str(stdout).unwrap();
+  let mut reports_json = String::new();
+  sudo.stdout.unwrap().read_to_string(&mut reports_json)?;
+  let reports: Vec<Report> = serde_json::from_str(&reports_json).unwrap();
 
   Ok(reports)
 }
