@@ -8,4 +8,4 @@ setup-hooks: clean-git-hooks
 	ln -f git-hooks/* .git/hooks
 
 clean-a17:
-	sudo rm -rf examples/a17/root/file.sh
+	sudo rm -rf parser/examples/a17/root/file.sh
