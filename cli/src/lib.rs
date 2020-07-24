@@ -27,3 +27,5 @@ pub use sudo::sudo;
 
 mod report;
 pub use report::Report;
+
+pub mod hard_link;

@@ -1,5 +1,5 @@
-use crate::{sudo, Report};
-use dtflib::{dotfile, Context, DotFile};
+use crate::{hard_link, sudo, Report};
+use dtflib::{Context, DotFile};
 use std::collections::HashMap;
 use std::io::Result;
 
@@ -8,13 +8,13 @@ pub fn link(cx: &Context, dotfiles: &HashMap<u32, DotFile>) -> Result<()> {
   let mut reports: Vec<Report> = Vec::with_capacity(dotfiles.len());
 
   for (id, dotfile) in dotfiles {
-    match dotfile.link(cx, None) {
+    match hard_link::hard_link(cx, dotfile, None) {
       Ok(_) => reports.push(Report {
         dotfile_id: *id,
         error: None,
       }),
       Err(e) => match e.kind {
-        dotfile::ErrorKind::PermissionDenied => {
+        hard_link::ErrorKind::PermissionDenied => {
           denied.insert(*id, dotfile);
         }
         _ => reports.push(Report {

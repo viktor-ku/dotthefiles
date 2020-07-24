@@ -1,11 +1,12 @@
+use crate::hard_link;
 use colored::Colorize;
-use dtflib::{dotfile, DotFile};
+use dtflib::DotFile;
 use serde::{Deserialize, Serialize};
 
 #[derive(Debug, Serialize, Deserialize)]
 pub struct Report {
   pub dotfile_id: u32,
-  pub error: Option<dotfile::Error>,
+  pub error: Option<hard_link::Error>,
 }
 
 impl Report {
@@ -13,11 +14,11 @@ impl Report {
     self.error.is_none()
   }
 
-  pub fn print(dotfile: &DotFile, err: &dotfile::Error) {
+  pub fn print(dotfile: &DotFile, err: &hard_link::Error) {
     println!("|> {}: {}", dotfile.name.bold(), err.message.red());
     println!("   - Error occured while trying to {}", err.stage);
     match err.stage {
-      dotfile::ErrorStage::HardLink => {
+      hard_link::ErrorStage::HardLink => {
         println!(
           "     from: {}",
           dotfile
@@ -37,7 +38,7 @@ impl Report {
             .dimmed()
         );
       }
-      dotfile::ErrorStage::RemoveFile => {
+      hard_link::ErrorStage::RemoveFile => {
         println!(
           "     {}",
           dotfile
