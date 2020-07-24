@@ -1,0 +1,5 @@
+map:
+  - from: .
+    files:
+    - name: file.sh
+      to: root

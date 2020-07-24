@@ -1,66 +1,107 @@
+use crate::Context;
+use serde::{Deserialize, Serialize};
+use std::fmt;
+use std::fs;
 use std::path::PathBuf;
 
-#[derive(Debug, PartialEq, Eq)]
-pub struct DotFile {
-  pub name: String,
-  pub from: PathBuf,
-  pub to: PathBuf,
+#[derive(Debug, Serialize, Deserialize)]
+pub enum ErrorKind {
+  NotFound,
+  PermissionDenied,
+  AlreadyExists,
+  Other,
 }
 
-impl DotFile {
+#[derive(Debug, Serialize, Deserialize)]
+pub enum ErrorStage {
+  RemoveFile,
+  HardLink,
+}
+
+#[derive(Debug, Serialize, Deserialize)]
+pub struct Error {
+  pub kind: ErrorKind,
+  pub stage: ErrorStage,
+  pub message: String,
+}
+
+#[derive(Debug, PartialEq, Eq, Serialize, Deserialize)]
+pub struct DotFile<'a> {
+  pub id: u32,
+  pub name: &'a str,
+  pub src: PathBuf,
+  pub dst: PathBuf,
+}
+
+impl<'a> DotFile<'a> {
   /// Compiles final `to` path
-  pub fn to(&self) -> PathBuf {
-    PathBuf::from(&self.to).join(PathBuf::from(&self.name).file_name().unwrap())
+  pub fn dst_file_path(&self) -> PathBuf {
+    PathBuf::from(&self.dst).join(self.name)
   }
 
   /// Compiles final `from` path
-  pub fn from(&self) -> PathBuf {
-    PathBuf::from(&self.from).join(PathBuf::from(&self.name).file_name().unwrap())
+  pub fn src_file_path(&self) -> PathBuf {
+    PathBuf::from(&self.src).join(self.name)
+  }
+
+  pub fn link(&self, cx: &Context, rm_dst: Option<()>) -> Result<(), Error> {
+    let src = &self.src_file_path();
+    let dst = &self.dst_file_path();
+
+    if rm_dst.is_some() {
+      match fs::remove_file(dst) {
+        Ok(_) => {}
+        Err(e) => {
+          return Err(Error {
+            kind: e.kind().into(),
+            message: e.to_string(),
+            stage: ErrorStage::RemoveFile,
+          })
+        }
+      }
+    }
+
+    match fs::hard_link(src, dst) {
+      Ok(_) => Ok(()),
+      Err(e) => match e.kind() {
+        std::io::ErrorKind::AlreadyExists => self.link(cx, Some(())),
+        std::io::ErrorKind::NotFound => Err(Error {
+          kind: e.kind().into(),
+          message: "source file was not found".to_owned(),
+          stage: ErrorStage::HardLink,
+        }),
+        _ => Err(Error {
+          kind: e.kind().into(),
+          message: e.to_string(),
+          stage: ErrorStage::HardLink,
+        }),
+      },
+    }
   }
 }
 
-#[cfg(test)]
-mod tests {
-  use super::*;
-  use pretty_assertions::assert_eq;
-
-  #[test]
-  fn a01() {
-    let file = DotFile {
-      name: String::from("file.sh"),
-      from: PathBuf::from("/from"),
-      to: PathBuf::from("/to"),
-    };
-
-    assert_eq!(
-      file.from(),
-      PathBuf::from("/from/file.sh"),
-      "should combine `from` and `name`"
-    );
-    assert_eq!(
-      file.to(),
-      PathBuf::from("/to/file.sh"),
-      "should combine `to` and `name`"
-    );
+impl std::convert::From<std::io::ErrorKind> for ErrorKind {
+  fn from(io_err_kind: std::io::ErrorKind) -> Self {
+    match &io_err_kind {
+      std::io::ErrorKind::NotFound => Self::NotFound,
+      std::io::ErrorKind::PermissionDenied => Self::PermissionDenied,
+      std::io::ErrorKind::AlreadyExists => Self::AlreadyExists,
+      _ => Self::Other,
+    }
   }
+}
 
-  #[test]
-  fn a02() {
-    let file = DotFile {
-      name: String::from("sub-folder/file.sh"),
-      from: PathBuf::from("/from"),
-      to: PathBuf::from("/to"),
-    };
+impl fmt::Display for Error {
+  fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+    write!(f, "{}", self.message)
+  }
+}
 
-    assert_eq!(
-      file.from(),
-      PathBuf::from("/from/file.sh"),
-      "should ignore path in the `name` if one exists"
-    );
-    assert_eq!(
-      file.to(),
-      PathBuf::from("/to/file.sh"),
-      "should combine `to` and `name`"
-    );
+impl fmt::Display for ErrorStage {
+  fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+    match self {
+      ErrorStage::RemoveFile => write!(f, "remove destination file"),
+      ErrorStage::HardLink => write!(f, "make a hard link"),
+    }
   }
 }

@@ -1,83 +1,82 @@
 use crate::lib::{client_os, config, DotFile, Render, RenderState};
-use std::io;
-use std::path::PathBuf;
+use crate::Context;
+use std::collections::HashMap;
+use std::io::Result;
 
-#[derive(Debug)]
-pub struct Mapping<'a> {
-  pub base_dir: &'a PathBuf,
-  pub client_os: &'a client_os::Type,
-  pub home_dir: &'a PathBuf,
-}
-impl<'a> Mapping<'a> {
-  /// Should return the right directory name to get our files from (pan intended).
-  /// Based on the target and currently used OS.
-  pub fn source_dir(&self, target: &config::Target) -> Option<&str> {
-    match self.client_os {
-      client_os::Type::Linux => {
-        if target == &config::Target::Any {
-          None
-        } else {
-          Some("linux")
-        }
+/// Should return the right directory name to get our files from (pan intended).
+/// Based on the target and currently used OS.
+fn source_dir<'a>(cx: &Context, target: &config::Target) -> Option<&'a str> {
+  match cx.client_os {
+    client_os::Type::Linux => {
+      if target == &config::Target::Any {
+        None
+      } else {
+        Some("linux")
       }
-      client_os::Type::Darwin => {
-        if target == &config::Target::Any {
-          None
-        } else {
-          Some("darwin")
-        }
-      }
-      client_os::Type::Win => {
-        if target == &config::Target::Any {
-          None
-        } else {
-          Some("win")
-        }
-      }
-      _ => panic!("do not know which source directory to use!"),
     }
+    client_os::Type::Darwin => {
+      if target == &config::Target::Any {
+        None
+      } else {
+        Some("darwin")
+      }
+    }
+    client_os::Type::Win => {
+      if target == &config::Target::Any {
+        None
+      } else {
+        Some("win")
+      }
+    }
+    _ => panic!("do not know which source directory to use!"),
   }
+}
 
-  pub fn map(&self, config: &config::Config) -> io::Result<Vec<DotFile>> {
-    let mut v: Vec<DotFile> = Vec::with_capacity(32);
+pub fn map<'a>(cx: &Context, config: &'a config::Config) -> Result<HashMap<u32, DotFile<'a>>> {
+  let mut id: u32 = 0;
+  let mut ret: HashMap<u32, DotFile<'a>> = HashMap::new();
 
-    for section in &config.map {
-      let target: &config::Target = {
-        let mut compatible: Vec<&config::Target> = section
-          .target
-          .iter()
-          .filter(|target| target == &self.client_os)
-          .collect();
+  for section in &config.map {
+    let target: &config::Target = {
+      let mut compatible: Vec<&config::Target> = section
+        .target
+        .iter()
+        .filter(|target| target == &cx.client_os)
+        .collect();
 
-        if compatible.is_empty() {
-          continue;
-        }
+      if compatible.is_empty() {
+        continue;
+      }
 
-        compatible.sort_unstable();
+      compatible.sort_unstable();
 
-        *compatible.first().unwrap()
+      *compatible.first().unwrap()
+    };
+
+    for file in &section.files {
+      let to = Render::from(&file.to);
+      let from = Render::from(&section.from);
+
+      let state = RenderState {
+        home_dir: &cx.home_dir,
+        base_dir: &cx.base_dir,
+        source_dir: &source_dir(cx, target),
       };
 
-      for file in &section.files {
-        let to = Render::from(&file.to);
-        let from = Render::from(&section.from);
+      id += 1;
 
-        let state = RenderState {
-          home_dir: &self.home_dir,
-          base_dir: &self.base_dir,
-          source_dir: &self.source_dir(target),
-        };
+      let dotfile = DotFile {
+        id,
+        name: &file.name,
+        dst: to.render(&state),
+        src: from.render(&state),
+      };
 
-        v.push(DotFile {
-          name: file.name.clone(),
-          to: to.render(&state),
-          from: from.render(&state),
-        })
-      }
+      ret.insert(id, dotfile);
     }
-
-    Ok(v)
   }
+
+  Ok(ret)
 }
 
 #[cfg(test)]
@@ -85,6 +84,8 @@ mod tests {
   use super::*;
   use crate::lib::read_yaml;
   use pretty_assertions::assert_eq;
+  use std::io;
+  use std::path::PathBuf;
 
   fn base_dir(t: &str) -> PathBuf {
     std::env::current_dir().unwrap().join("examples").join(t)
@@ -101,6 +102,13 @@ mod tests {
     }
   }
 
+  #[inline]
+  fn to_map(expected: DotFile) -> HashMap<u32, DotFile> {
+    let mut val = HashMap::new();
+    val.insert(expected.id, expected);
+    val
+  }
+
   #[test]
   fn a01() -> io::Result<()> {
     let base_dir = &base_dir("a01");
@@ -109,26 +117,28 @@ mod tests {
 
     let config = read_yaml(config_path)?;
 
-    let mapping = Mapping {
+    let cx = Context {
       base_dir,
       home_dir: &home_dir,
       client_os: &client_os::Type::Linux,
+      config_path,
+      child: true,
     };
 
-    let actual = mapping.map(&config)?;
+    let actual = map(&cx, &config)?;
 
-    let expected: Vec<DotFile> = vec![DotFile {
-      name: String::from("file.sh"),
-      from: PathBuf::from(&base_dir.join("files/linux")),
-      to: PathBuf::from(&home_dir),
-    }];
+    let expected = DotFile {
+      id: 1,
+      name: "file.sh",
+      src: PathBuf::from(&base_dir.join("files/linux")),
+      dst: PathBuf::from(&home_dir),
+    };
 
     assert_eq!(
-      actual, expected,
+      actual,
+      to_map(expected),
       "given the right target it should provide us with the simplest file mapping"
     );
-    assert!(!actual[0].from.to_str().unwrap().ends_with('/'));
-    assert!(!actual[0].to.to_str().unwrap().ends_with('/'));
 
     Ok(())
   }
@@ -141,15 +151,16 @@ mod tests {
 
     let config = read_yaml(config_path)?;
 
-    let mapping = Mapping {
+    let cx = Context {
       base_dir,
       home_dir: &home_dir,
       client_os: &client_os::Type::Darwin,
+      config_path,
+      child: true,
     };
 
-    let actual = mapping.map(&config)?;
-
-    let expected: Vec<DotFile> = vec![];
+    let actual = map(&cx, &config)?;
+    let expected = HashMap::new();
 
     assert_eq!(
       actual, expected,
@@ -167,15 +178,17 @@ mod tests {
 
     let config = read_yaml(config_path)?;
 
-    let mapping = Mapping {
+    let cx = Context {
       base_dir,
       home_dir: &home_dir,
       client_os: &client_os::Type::Darwin,
+      config_path,
+      child: true,
     };
 
-    let actual = mapping.map(&config)?;
+    let actual = map(&cx, &config)?;
 
-    let expected: Vec<DotFile> = vec![];
+    let expected = HashMap::new();
 
     assert_eq!(
       actual, expected,
@@ -193,26 +206,28 @@ mod tests {
 
     let config = read_yaml(config_path)?;
 
-    let mapping = Mapping {
+    let cx = Context {
       base_dir,
       home_dir: &home_dir,
       client_os: &client_os::Type::Darwin,
+      config_path,
+      child: true,
     };
 
-    let actual = mapping.map(&config)?;
+    let actual = map(&cx, &config)?;
 
-    let expected: Vec<DotFile> = vec![DotFile {
-      name: String::from("file.sh"),
-      from: PathBuf::from(&base_dir.join("files/darwin")),
-      to: PathBuf::from(&home_dir),
-    }];
+    let expected = DotFile {
+      id: 1,
+      name: "file.sh",
+      src: PathBuf::from(&base_dir.join("files/darwin")),
+      dst: PathBuf::from(&home_dir),
+    };
 
     assert_eq!(
-      actual, expected,
+      actual,
+      to_map(expected),
       "should set right os type into the 'from' field"
     );
-    assert!(!actual[0].from.to_str().unwrap().ends_with('/'));
-    assert!(!actual[0].to.to_str().unwrap().ends_with('/'));
 
     Ok(())
   }
@@ -225,23 +240,28 @@ mod tests {
 
     let config = read_yaml(config_path)?;
 
-    let mapping = Mapping {
+    let cx = Context {
       base_dir,
       home_dir: &home_dir,
       client_os: &client_os::Type::Darwin,
+      config_path,
+      child: true,
     };
 
-    let actual = mapping.map(&config)?;
+    let actual = map(&cx, &config)?;
 
-    let expected: Vec<DotFile> = vec![DotFile {
-      name: String::from("file.sh"),
-      from: PathBuf::from(&base_dir.join("files")),
-      to: PathBuf::from(&home_dir),
-    }];
+    let expected = DotFile {
+      id: 1,
+      name: "file.sh",
+      src: PathBuf::from(&base_dir.join("files")),
+      dst: PathBuf::from(&home_dir),
+    };
 
-    assert_eq!(actual, expected, "should read 'any' target correctly");
-    assert!(!actual[0].from.to_str().unwrap().ends_with('/'));
-    assert!(!actual[0].to.to_str().unwrap().ends_with('/'));
+    assert_eq!(
+      actual,
+      to_map(expected),
+      "should read 'any' target correctly"
+    );
 
     Ok(())
   }
@@ -254,28 +274,30 @@ mod tests {
 
     let config = read_yaml(config_path)?;
 
-    let mapping = Mapping {
+    let cx = Context {
       base_dir,
       home_dir: &home_dir,
       client_os: &client_os::Type::Darwin,
+      config_path,
+      child: true,
     };
 
-    let actual = mapping.map(&config)?;
+    let actual = map(&cx, &config)?;
 
-    let expected: Vec<DotFile> = vec![DotFile {
-      name: String::from("file.sh"),
-      from: PathBuf::from(&base_dir.join("files")),
-      to: PathBuf::from(&home_dir),
-    }];
+    let expected = DotFile {
+      id: 1,
+      name: "file.sh",
+      src: PathBuf::from(&base_dir.join("files")),
+      dst: PathBuf::from(&home_dir),
+    };
 
     println!("\n|> {:}\n", &config_path.to_str().unwrap());
 
     assert_eq!(
-      actual, expected,
+      actual,
+      to_map(expected),
       "when `target` contains `any` in it alongside with other targets, treat it like `any` anyway"
     );
-    assert!(!actual[0].from.to_str().unwrap().ends_with('/'));
-    assert!(!actual[0].to.to_str().unwrap().ends_with('/'));
 
     Ok(())
   }
@@ -288,28 +310,30 @@ mod tests {
 
     let config = read_yaml(config_path)?;
 
-    let mapping = Mapping {
+    let cx = Context {
       base_dir,
       home_dir: &home_dir,
       client_os: &client_os::Type::Darwin,
+      config_path,
+      child: true,
     };
 
-    let actual = mapping.map(&config)?;
+    let actual = map(&cx, &config)?;
 
-    let expected: Vec<DotFile> = vec![DotFile {
-      name: String::from("file.sh"),
-      from: PathBuf::from(&base_dir.join("files")),
-      to: PathBuf::from(&home_dir),
-    }];
+    let expected = DotFile {
+      id: 1,
+      name: "file.sh",
+      src: PathBuf::from(&base_dir.join("files")),
+      dst: PathBuf::from(&home_dir),
+    };
 
     println!("\n|> {:}\n", &config_path.to_str().unwrap());
 
     assert_eq!(
-      actual, expected,
+      actual,
+      to_map(expected),
       "when there is no `target` defined, treat it like `any` by default"
     );
-    assert!(!actual[0].from.to_str().unwrap().ends_with('/'));
-    assert!(!actual[0].to.to_str().unwrap().ends_with('/'));
 
     Ok(())
   }
@@ -322,25 +346,30 @@ mod tests {
 
     let config = read_yaml(config_path)?;
 
-    let mapping = Mapping {
+    let cx = Context {
       base_dir,
       home_dir: &home_dir,
       client_os: &client_os::Type::Darwin,
+      config_path,
+      child: true,
     };
 
-    let actual = mapping.map(&config)?;
+    let actual = map(&cx, &config)?;
 
-    let expected: Vec<DotFile> = vec![DotFile {
-      name: String::from("file.sh"),
-      from: PathBuf::from(&base_dir.join("files/darwin")),
-      to: PathBuf::from(&home_dir),
-    }];
+    let expected = DotFile {
+      id: 1,
+      name: "file.sh",
+      src: PathBuf::from(&base_dir.join("files/darwin")),
+      dst: PathBuf::from(&home_dir),
+    };
 
     println!("\n|> {:}\n", &config_path.to_str().unwrap());
 
-    assert_eq!(actual, expected, "should pick the right one out of two");
-    assert!(!actual[0].from.to_str().unwrap().ends_with('/'));
-    assert!(!actual[0].to.to_str().unwrap().ends_with('/'));
+    assert_eq!(
+      actual,
+      to_map(expected),
+      "should pick the right one out of two"
+    );
 
     Ok(())
   }
@@ -353,25 +382,30 @@ mod tests {
 
     let config = read_yaml(config_path)?;
 
-    let mapping = Mapping {
+    let cx = Context {
       base_dir,
       home_dir: &home_dir,
       client_os: &client_os::Type::Linux,
+      config_path,
+      child: true,
     };
 
-    let actual = mapping.map(&config)?;
+    let actual = map(&cx, &config)?;
 
-    let expected: Vec<DotFile> = vec![DotFile {
-      name: String::from("ide-script.sh"),
-      from: PathBuf::from(&base_dir.join("files/linux")),
-      to: PathBuf::from(&home_dir).join("Code"),
-    }];
+    let expected = DotFile {
+      id: 1,
+      name: "ide-script.sh",
+      src: PathBuf::from(&base_dir.join("files/linux")),
+      dst: PathBuf::from(&home_dir).join("Code"),
+    };
 
     println!("\n|> {:}\n", &config_path.to_str().unwrap());
 
-    assert_eq!(actual, expected, "should pick the right one out of two");
-    assert!(!actual[0].from.to_str().unwrap().ends_with('/'));
-    assert!(!actual[0].to.to_str().unwrap().ends_with('/'));
+    assert_eq!(
+      actual,
+      to_map(expected),
+      "should pick the right one out of two"
+    );
 
     Ok(())
   }
@@ -384,28 +418,30 @@ mod tests {
 
     let config = read_yaml(config_path)?;
 
-    let mapping = Mapping {
+    let cx = Context {
       base_dir,
       home_dir: &home_dir,
       client_os: &client_os::Type::Linux,
+      config_path,
+      child: true,
     };
 
-    let actual = mapping.map(&config)?;
+    let actual = map(&cx, &config)?;
 
-    let expected: Vec<DotFile> = vec![DotFile {
-      name: String::from("file.sh"),
-      from: PathBuf::from(&base_dir.join("files")),
-      to: PathBuf::from("/etc/some"),
-    }];
+    let expected = DotFile {
+      id: 1,
+      name: "file.sh",
+      src: PathBuf::from(&base_dir.join("files")),
+      dst: PathBuf::from("/etc/some"),
+    };
 
     println!("\n|> {:}\n", &config_path.to_str().unwrap());
 
     assert_eq!(
-      actual, expected,
+      actual,
+      to_map(expected),
       "should decide to link from files/ to /etc/some"
     );
-    assert!(!actual[0].from.to_str().unwrap().ends_with('/'));
-    assert!(!actual[0].to.to_str().unwrap().ends_with('/'));
 
     Ok(())
   }
@@ -422,28 +458,29 @@ mod tests {
 
       let config = read_yaml(config_path)?;
 
-      let mapping = Mapping {
+      let cx = Context {
         base_dir,
         home_dir: &home_dir,
         client_os: &client_os::Type::Linux,
+        config_path,
+        child: true,
       };
 
-      let actual = mapping.map(&config)?;
+      let actual = map(&cx, &config)?;
 
-      let expected: Vec<DotFile> = vec![DotFile {
-        name: String::from("file.sh"),
-        from: PathBuf::from(&base_dir.join("otherstuff")),
-        to: PathBuf::from(&home_dir).join("some"),
-      }];
+      let expected = DotFile {
+        id: 1,
+        name: "file.sh",
+        src: PathBuf::from(&base_dir.join("otherstuff")),
+        dst: PathBuf::from(&home_dir).join("some"),
+      };
 
       println!("\n|> {:}\n", &config_path.to_str().unwrap());
 
       assert_eq!(
-        actual, expected,
+        actual, to_map(expected),
         "if `from` field is provided and is a relative path then resolve it relative to the config's location regardless of the client os"
       );
-      assert!(!actual[0].from.to_str().unwrap().ends_with('/'));
-      assert!(!actual[0].to.to_str().unwrap().ends_with('/'));
 
       Ok(())
     }
@@ -456,28 +493,30 @@ mod tests {
 
       let config = read_yaml(config_path)?;
 
-      let mapping = Mapping {
+      let cx = Context {
         base_dir,
         home_dir: &home_dir,
         client_os: &client_os::Type::Linux,
+        config_path,
+        child: true,
       };
 
-      let actual = mapping.map(&config)?;
+      let actual = map(&cx, &config)?;
 
-      let expected: Vec<DotFile> = vec![DotFile {
-        name: String::from("file.sh"),
-        from: PathBuf::from(&base_dir).join("otherstuff"),
-        to: PathBuf::from(&home_dir).join("some"),
-      }];
+      let expected = DotFile {
+        id: 1,
+        name: "file.sh",
+        src: PathBuf::from(&base_dir).join("otherstuff"),
+        dst: PathBuf::from(&home_dir).join("some"),
+      };
 
       println!("\n|> {:}\n", &config_path.to_str().unwrap());
 
       assert_eq!(
-        actual, expected,
+        actual,
+        to_map(expected),
         "should resolve relative `from` regardless of the target os"
       );
-      assert!(!actual[0].from.to_str().unwrap().ends_with('/'));
-      assert!(!actual[0].to.to_str().unwrap().ends_with('/'));
 
       Ok(())
     }
@@ -490,28 +529,30 @@ mod tests {
 
       let config = read_yaml(config_path)?;
 
-      let mapping = Mapping {
+      let cx = Context {
         base_dir,
         home_dir: &home_dir,
         client_os: &client_os::Type::Linux,
+        config_path,
+        child: true,
       };
 
-      let actual = mapping.map(&config)?;
+      let actual = map(&cx, &config)?;
 
-      let expected: Vec<DotFile> = vec![DotFile {
-        name: String::from("file.sh"),
-        from: PathBuf::from(&home_dir).join("backup"),
-        to: PathBuf::from(&home_dir).join("some"),
-      }];
+      let expected = DotFile {
+        id: 1,
+        name: "file.sh",
+        src: PathBuf::from(&home_dir).join("backup"),
+        dst: PathBuf::from(&home_dir).join("some"),
+      };
 
       println!("\n|> {:}\n", &config_path.to_str().unwrap());
 
       assert_eq!(
-        actual, expected,
+        actual,
+        to_map(expected),
         "should be able to resolve home dir correctly in the `from` field"
       );
-      assert!(!actual[0].from.to_str().unwrap().ends_with('/'));
-      assert!(!actual[0].to.to_str().unwrap().ends_with('/'));
 
       Ok(())
     }
@@ -524,28 +565,30 @@ mod tests {
 
       let config = read_yaml(config_path)?;
 
-      let mapping = Mapping {
+      let cx = Context {
         base_dir,
         home_dir: &home_dir,
         client_os: &client_os::Type::Linux,
+        config_path,
+        child: true,
       };
 
-      let actual = mapping.map(&config)?;
+      let actual = map(&cx, &config)?;
 
-      let expected: Vec<DotFile> = vec![DotFile {
-        name: String::from("file.sh"),
-        from: PathBuf::from("/my/bucket/with/stuff/by/linux"),
-        to: PathBuf::from(&home_dir).join("some"),
-      }];
+      let expected = DotFile {
+        id: 1,
+        name: "file.sh",
+        src: PathBuf::from("/my/bucket/with/stuff/by/linux"),
+        dst: PathBuf::from(&home_dir).join("some"),
+      };
 
       println!("\n|> {:}\n", &config_path.to_str().unwrap());
 
       assert_eq!(
-        actual, expected,
+        actual,
+        to_map(expected),
         "should look for the absolute path with target folder when a $TARGET variable is present"
       );
-      assert!(!actual[0].from.to_str().unwrap().ends_with('/'));
-      assert!(!actual[0].to.to_str().unwrap().ends_with('/'));
 
       Ok(())
     }
@@ -558,28 +601,29 @@ mod tests {
 
       let config = read_yaml(config_path)?;
 
-      let mapping = Mapping {
+      let cx = Context {
         base_dir,
         home_dir: &home_dir,
         client_os: &client_os::Type::Linux,
+        config_path,
+        child: true,
       };
 
-      let actual = mapping.map(&config)?;
+      let actual = map(&cx, &config)?;
 
-      let expected: Vec<DotFile> = vec![DotFile {
-        name: String::from("file.sh"),
-        from: PathBuf::from("/my/bucket/with/stuff/by"),
-        to: PathBuf::from(&home_dir).join("some"),
-      }];
+      let expected = DotFile {
+        id: 1,
+        name: "file.sh",
+        src: PathBuf::from("/my/bucket/with/stuff/by"),
+        dst: PathBuf::from(&home_dir).join("some"),
+      };
 
       println!("\n|> {:}\n", &config_path.to_str().unwrap());
 
       assert_eq!(
-        actual, expected,
+        actual, to_map(expected),
         "in case there is a $TARGET variable in the `from` field, but the target is any, should look for just the `from` field"
       );
-      assert!(!actual[0].from.to_str().unwrap().ends_with('/'));
-      assert!(!actual[0].to.to_str().unwrap().ends_with('/'));
 
       Ok(())
     }
@@ -592,28 +636,30 @@ mod tests {
 
       let config = read_yaml(config_path)?;
 
-      let mapping = Mapping {
+      let cx = Context {
         base_dir,
         home_dir: &home_dir,
         client_os: &client_os::Type::Linux,
+        config_path,
+        child: true,
       };
 
-      let actual = mapping.map(&config)?;
+      let actual = map(&cx, &config)?;
 
-      let expected: Vec<DotFile> = vec![DotFile {
-        name: String::from("file.sh"),
-        from: PathBuf::from(&base_dir).join("stuff"),
-        to: PathBuf::from(&home_dir).join("some"),
-      }];
+      let expected = DotFile {
+        id: 1,
+        name: "file.sh",
+        src: PathBuf::from(&base_dir).join("stuff"),
+        dst: PathBuf::from(&home_dir).join("some"),
+      };
 
       println!("\n|> {:}\n", &config_path.to_str().unwrap());
 
       assert_eq!(
-        actual, expected,
+        actual,
+        to_map(expected),
         "should just look into the /stuff folder for any file for any platform"
       );
-      assert!(!actual[0].from.to_str().unwrap().ends_with('/'));
-      assert!(!actual[0].to.to_str().unwrap().ends_with('/'));
 
       Ok(())
     }

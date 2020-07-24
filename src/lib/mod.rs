@@ -10,12 +10,11 @@ pub mod client_os;
 mod render;
 pub use render::{Render, RenderState};
 
-mod dotfile;
+pub mod dotfile;
 pub use dotfile::DotFile;
 
-pub mod op;
+mod sudo;
+pub use sudo::sudo;
 
-mod question;
-pub use question::Question;
-
-pub mod report;
+mod report;
+pub use report::Report;
