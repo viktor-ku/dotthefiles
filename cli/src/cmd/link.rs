@@ -1,5 +1,5 @@
-use crate::lib::{dotfile, sudo, DotFile, Report};
-use crate::Context;
+use crate::{sudo, Report};
+use dtflib::{dotfile, Context, DotFile};
 use std::collections::HashMap;
 use std::io::Result;
 

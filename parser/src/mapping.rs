@@ -1,5 +1,5 @@
-use crate::lib::{client_os, config, DotFile, Render, RenderState};
-use crate::Context;
+use crate::{config, Render, RenderState};
+use dtflib::{client_os, Context, DotFile};
 use std::collections::HashMap;
 use std::io::Result;
 
@@ -82,7 +82,7 @@ pub fn map<'a>(cx: &Context, config: &'a config::Config) -> Result<HashMap<u32, 
 #[cfg(test)]
 mod tests {
   use super::*;
-  use crate::lib::read_yaml;
+  use crate::read_yaml;
   use pretty_assertions::assert_eq;
   use std::io;
   use std::path::PathBuf;

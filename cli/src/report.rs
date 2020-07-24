@@ -1,5 +1,5 @@
-use crate::lib::{dotfile, DotFile};
 use colored::Colorize;
+use dtflib::{dotfile, DotFile};
 use serde::{Deserialize, Serialize};
 
 #[derive(Debug, Serialize, Deserialize)]

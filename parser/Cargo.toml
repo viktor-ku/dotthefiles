@@ -1,0 +1,13 @@
+[package]
+name = "parser"
+version = "0.1.0"
+authors = ["Viktor Kuroljov <viktor.konsta@gmail.com>"]
+edition = "2018"
+
+[dependencies]
+serde = { version = "1.0" }
+serde_yaml = { version = "0.8" }
+dtflib = { path = "../dtflib" }
+
+[dev-dependencies]
+pretty_assertions = { version = "0.6" }

@@ -1,4 +1,4 @@
-use crate::lib::client_os;
+use dtflib::client_os;
 use serde::Deserialize;
 
 #[derive(Debug, Deserialize, PartialEq, Eq)]

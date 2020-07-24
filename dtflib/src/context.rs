@@ -1,4 +1,4 @@
-use crate::lib::client_os;
+use crate::client_os;
 use std::path::PathBuf;
 
 #[derive(Debug)]

@@ -1,5 +1,5 @@
-use crate::lib::{DotFile, Report};
-use crate::CHILD_PARAM;
+use crate::Report;
+use dtflib::{DotFile, CHILD_PARAM};
 use std::collections::HashMap;
 use std::io::prelude::{Read, Write};
 use std::io::Result;

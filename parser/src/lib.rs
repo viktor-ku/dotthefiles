@@ -5,16 +5,5 @@ pub mod config;
 
 pub mod mapping;
 
-pub mod client_os;
-
 mod render;
 pub use render::{Render, RenderState};
-
-pub mod dotfile;
-pub use dotfile::DotFile;
-
-mod sudo;
-pub use sudo::sudo;
-
-mod report;
-pub use report::Report;
