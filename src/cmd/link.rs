@@ -27,7 +27,7 @@ pub fn link(cx: &Context, dotfiles: &HashMap<u32, DotFile>) -> Result<()> {
 
   if cx.is_main() {
     if !denied.is_empty() {
-      let sreports = sudo(cx, denied)?;
+      let sreports = sudo(denied)?;
       reports.extend(sreports);
     }
 

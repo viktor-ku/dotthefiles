@@ -1,22 +1,19 @@
 use crate::lib::{DotFile, Report};
-use crate::{Context, CHILD_PARAM};
+use crate::CHILD_PARAM;
 use std::collections::HashMap;
 use std::io::prelude::{Read, Write};
 use std::io::Result;
 use std::process::{Command, Stdio};
 
-pub fn sudo<'a>(cx: &Context, dotfiles: &HashMap<u32, &DotFile>) -> Result<Vec<Report>> {
-  let dotfiles_json = serde_json::to_string(dotfiles)?;
-
+pub fn sudo<'a>(dotfiles: &HashMap<u32, &DotFile>) -> Result<Vec<Report>> {
   let sudo = Command::new("sudo")
-    .arg("target/debug/dtf")
+    .args(std::env::args())
     .arg(CHILD_PARAM)
-    .arg("ln")
-    .arg(cx.config_path)
     .stdin(Stdio::piped())
     .stdout(Stdio::piped())
     .spawn()?;
 
+  let dotfiles_json = serde_json::to_string(dotfiles)?;
   sudo.stdin.unwrap().write_all(dotfiles_json.as_bytes())?;
 
   let mut reports_json = String::new();
