@@ -47,6 +47,24 @@ fn main() -> Result<()> {
         cli::link(&cx, &dotfiles)?;
       }
     }
+    Cli::List { config } => {
+      let config_path = &config.canonicalize()?;
+      let ref mut base_dir = config_path.clone();
+      base_dir.pop();
+
+      let cx = Context {
+        config_path,
+        base_dir,
+        client_os,
+        home_dir,
+        child,
+      };
+
+      let mut parser = Parser::with(&cx);
+      let dotfiles = parser.from_path(&config_path)?.parse()?;
+
+      cli::list(&cx, &dotfiles)?;
+    }
   }
 
   Ok(())

@@ -9,6 +9,12 @@ pub enum Cli {
     #[structopt(name = "config-path", parse(from_os_str))]
     config: PathBuf,
   },
+
+  #[structopt(name = "ls")]
+  List {
+    #[structopt(name = "config-path", parse(from_os_str))]
+    config: PathBuf,
+  },
 }
 
 pub struct App;
