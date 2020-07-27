@@ -1,0 +1,32 @@
+{
+  "bumpFiles": [
+    {
+      "filename": "cli/Cargo.toml",
+      "updater": "ci/dist/cargo-toml/index.js"
+    },
+    {
+      "filename": "dtf/Cargo.toml",
+      "updater": "ci/dist/cargo-toml/index.js"
+    },
+    {
+      "filename": "dtflib/Cargo.toml",
+      "updater": "ci/dist/cargo-toml/index.js"
+    },
+    {
+      "filename": "parser/Cargo.toml",
+      "updater": "ci/dist/cargo-toml/index.js"
+    },
+    {
+      "filename": "package.json",
+      "type": "json"
+    },
+    {
+      "filename": "package-lock.json",
+      "type": "json"
+    }
+  ],
+  "scripts": {
+    "postbump": "cargo generate-lockfile",
+    "precommit": "git add Cargo.lock"
+  }
+}
