@@ -22,7 +22,7 @@ fn main() -> Result<()> {
   };
 
   match &app {
-    Cli::Link { config } => {
+    Cli::Link { config, force } => {
       let (config_path, base_dir) = &validate_config(&config);
 
       let cx = Context {
@@ -38,14 +38,14 @@ fn main() -> Result<()> {
       if cx.is_main() {
         let dotfiles = parser.from_path(&config_path)?.parse()?;
 
-        cli::link(&cx, &dotfiles)?;
+        cli::link(&cx, &dotfiles, *force)?;
       } else {
         let mut dotfiles_json = String::with_capacity(256);
         std::io::stdin().read_line(&mut dotfiles_json)?;
 
         let dotfiles = parser.from_json(&dotfiles_json).parse()?;
 
-        cli::link(&cx, &dotfiles)?;
+        cli::link(&cx, &dotfiles, *force)?;
       }
     }
     Cli::List { config } => {

@@ -23,7 +23,12 @@ pub struct Error {
   pub message: String,
 }
 
-pub fn hard_link(cx: &Context, dotfile: &DotFile, rm_dst: Option<()>) -> Result<(), Error> {
+pub fn hard_link(
+  cx: &Context,
+  dotfile: &DotFile,
+  force: bool,
+  rm_dst: Option<()>,
+) -> Result<(), Error> {
   let src = &dotfile.src_file_path();
   let dst = &dotfile.dst_file_path();
 
@@ -43,7 +48,14 @@ pub fn hard_link(cx: &Context, dotfile: &DotFile, rm_dst: Option<()>) -> Result<
   match fs::hard_link(src, dst) {
     Ok(_) => Ok(()),
     Err(e) => match e.kind() {
-      std::io::ErrorKind::AlreadyExists => hard_link(cx, dotfile, Some(())),
+      std::io::ErrorKind::AlreadyExists => match force {
+        true => hard_link(cx, dotfile, force, Some(())),
+        false => Err(Error {
+          kind: e.kind().into(),
+          message: "destination file already exists".to_owned(),
+          stage: ErrorStage::HardLink,
+        }),
+      },
       std::io::ErrorKind::NotFound => Err(Error {
         kind: e.kind().into(),
         message: "source file was not found".to_owned(),
