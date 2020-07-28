@@ -8,6 +8,8 @@ edition = "2018"
 os_info = "2.0"
 dirs = "3.0"
 serde_json = "1.0"
+libc = "0.2"
+colored = { version = "2.0" }
 
 cli = { path = "../cli" }
 dtflib = { path = "../dtflib" }

@@ -162,8 +162,10 @@ name = "dtf"
 version = "0.1.0"
 dependencies = [
  "cli",
+ "colored",
  "dirs",
  "dtflib",
+ "libc",
  "os_info",
  "parser",
  "serde_json",
