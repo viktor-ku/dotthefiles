@@ -3,6 +3,9 @@ use dtflib::{client_os, Context};
 use parser::Parser;
 use std::io::Result;
 
+mod validate_config;
+use validate_config::validate_config;
+
 fn main() -> Result<()> {
   let args: Vec<String> = std::env::args()
     .filter(|arg| arg != dtflib::CHILD_PARAM)
@@ -20,9 +23,7 @@ fn main() -> Result<()> {
 
   match &app {
     Cli::Link { config } => {
-      let config_path = &config.canonicalize()?;
-      let ref mut base_dir = config_path.clone();
-      base_dir.pop();
+      let (config_path, base_dir) = &validate_config(&config);
 
       let cx = Context {
         config_path,
@@ -48,9 +49,7 @@ fn main() -> Result<()> {
       }
     }
     Cli::List { config } => {
-      let config_path = &config.canonicalize()?;
-      let ref mut base_dir = config_path.clone();
-      base_dir.pop();
+      let (config_path, base_dir) = &validate_config(&config);
 
       let cx = Context {
         config_path,
