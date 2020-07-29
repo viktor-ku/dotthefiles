@@ -1,57 +1,23 @@
-use crate::{config, Render, RenderState};
-use dtflib::{client_os, Context, DotFile};
+use crate::{
+  config::{Config, Target},
+  Render, RenderState,
+};
+use dtflib::{Context, DotFile};
 use std::collections::HashMap;
 use std::io::Result;
 
-/// Should return the right directory name to get our files from (pan intended).
-/// Based on the target and currently used OS.
-fn source_dir<'a>(cx: &Context, target: &config::Target) -> Option<&'a str> {
-  match cx.client_os {
-    client_os::Type::Linux => {
-      if target == &config::Target::Any {
-        None
-      } else {
-        Some("linux")
-      }
-    }
-    client_os::Type::Darwin => {
-      if target == &config::Target::Any {
-        None
-      } else {
-        Some("darwin")
-      }
-    }
-    client_os::Type::Win => {
-      if target == &config::Target::Any {
-        None
-      } else {
-        Some("win")
-      }
-    }
-    _ => panic!("do not know which source directory to use!"),
-  }
-}
-
-pub fn map<'a>(cx: &Context, config: &'a config::Config) -> Result<HashMap<u32, DotFile<'a>>> {
+pub fn map<'a>(cx: &Context, config: &'a Config) -> Result<HashMap<u32, DotFile<'a>>> {
   let mut id: u32 = 0;
   let mut ret: HashMap<u32, DotFile<'a>> = HashMap::new();
 
   for section in &config.map {
-    let target: &config::Target = {
-      let mut compatible: Vec<&config::Target> = section
-        .target
-        .iter()
-        .filter(|target| target == &cx.client_os)
-        .collect();
+    let target = Target::pick(cx.client_os, &section.target);
 
-      if compatible.is_empty() {
-        continue;
-      }
+    if target.is_none() {
+      continue;
+    }
 
-      compatible.sort_unstable();
-
-      *compatible.first().unwrap()
-    };
+    let target = target.unwrap();
 
     for file in &section.files {
       let to = Render::from(&file.to);
@@ -60,7 +26,7 @@ pub fn map<'a>(cx: &Context, config: &'a config::Config) -> Result<HashMap<u32, 
       let state = RenderState {
         home_dir: &cx.home_dir,
         base_dir: &cx.base_dir,
-        source_dir: &source_dir(cx, target),
+        source_dir: target.dir(),
       };
 
       id += 1;
@@ -81,9 +47,11 @@ pub fn map<'a>(cx: &Context, config: &'a config::Config) -> Result<HashMap<u32, 
 
 #[cfg(test)]
 mod tests {
-  use super::*;
+  use super::map;
   use crate::read_yaml;
+  use dtflib::{client_os, Context, DotFile};
   use pretty_assertions::assert_eq;
+  use std::collections::HashMap;
   use std::io;
   use std::path::PathBuf;
 
@@ -154,7 +122,7 @@ mod tests {
     let cx = Context {
       base_dir,
       home_dir: &home_dir,
-      client_os: &client_os::Type::Darwin,
+      client_os: &client_os::Type::Macos,
       config_path,
       child: true,
     };
@@ -181,7 +149,7 @@ mod tests {
     let cx = Context {
       base_dir,
       home_dir: &home_dir,
-      client_os: &client_os::Type::Darwin,
+      client_os: &client_os::Type::Macos,
       config_path,
       child: true,
     };
@@ -209,7 +177,7 @@ mod tests {
     let cx = Context {
       base_dir,
       home_dir: &home_dir,
-      client_os: &client_os::Type::Darwin,
+      client_os: &client_os::Type::Macos,
       config_path,
       child: true,
     };
@@ -219,7 +187,7 @@ mod tests {
     let expected = DotFile {
       id: 1,
       name: "file.sh",
-      src: PathBuf::from(&base_dir.join("files/darwin")),
+      src: PathBuf::from(&base_dir.join("files/macos")),
       dst: PathBuf::from(&home_dir),
     };
 
@@ -243,7 +211,7 @@ mod tests {
     let cx = Context {
       base_dir,
       home_dir: &home_dir,
-      client_os: &client_os::Type::Darwin,
+      client_os: &client_os::Type::Macos,
       config_path,
       child: true,
     };
@@ -277,7 +245,7 @@ mod tests {
     let cx = Context {
       base_dir,
       home_dir: &home_dir,
-      client_os: &client_os::Type::Darwin,
+      client_os: &client_os::Type::Macos,
       config_path,
       child: true,
     };
@@ -313,7 +281,7 @@ mod tests {
     let cx = Context {
       base_dir,
       home_dir: &home_dir,
-      client_os: &client_os::Type::Darwin,
+      client_os: &client_os::Type::Macos,
       config_path,
       child: true,
     };
@@ -349,7 +317,7 @@ mod tests {
     let cx = Context {
       base_dir,
       home_dir: &home_dir,
-      client_os: &client_os::Type::Darwin,
+      client_os: &client_os::Type::Macos,
       config_path,
       child: true,
     };
@@ -359,7 +327,7 @@ mod tests {
     let expected = DotFile {
       id: 1,
       name: "file.sh",
-      src: PathBuf::from(&base_dir.join("files/darwin")),
+      src: PathBuf::from(&base_dir.join("files/macos")),
       dst: PathBuf::from(&home_dir),
     };
 
