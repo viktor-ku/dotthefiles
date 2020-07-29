@@ -8,6 +8,13 @@ pub enum Cli {
   Link {
     #[structopt(name = "config-path", parse(from_os_str))]
     config: PathBuf,
+
+    #[structopt(
+      short,
+      long,
+      help = "overrides destination file if one exists when making a hard link"
+    )]
+    force: bool,
   },
 
   #[structopt(name = "ls")]

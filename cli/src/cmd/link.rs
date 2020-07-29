@@ -3,12 +3,12 @@ use dtflib::{Context, DotFile};
 use std::collections::HashMap;
 use std::io::Result;
 
-pub fn link(cx: &Context, dotfiles: &HashMap<u32, DotFile>) -> Result<()> {
+pub fn link(cx: &Context, dotfiles: &HashMap<u32, DotFile>, force: bool) -> Result<()> {
   let ref mut denied: HashMap<u32, &DotFile> = HashMap::new();
   let mut reports: Vec<Report> = Vec::with_capacity(dotfiles.len());
 
   for (id, dotfile) in dotfiles {
-    match hard_link::hard_link(cx, dotfile, None) {
+    match hard_link::hard_link(cx, dotfile, force, None) {
       Ok(_) => reports.push(Report {
         dotfile_id: *id,
         error: None,
