@@ -4,7 +4,7 @@ use std::path::{Component, PathBuf};
 pub struct RenderState<'a> {
   pub home_dir: &'a PathBuf,
   pub base_dir: &'a PathBuf,
-  pub source_dir: &'a Option<&'a str>,
+  pub source_dir: &'a str,
 }
 
 #[derive(Debug)]
@@ -46,8 +46,8 @@ impl<'a> Render<'a> {
             p.push(&state.home_dir);
           }
           "$TARGET" => {
-            if let Some(source_dir) = state.source_dir {
-              p.push(source_dir);
+            if !state.source_dir.is_empty() {
+              p.push(state.source_dir);
             }
           }
           val => {
