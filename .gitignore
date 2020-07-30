@@ -3,3 +3,4 @@
 examples/a17/root/file.sh
 ci/dist
 tests/*/dist
+.idea
