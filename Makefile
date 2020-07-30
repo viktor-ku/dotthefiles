@@ -2,6 +2,15 @@ all:
 	echo hey
 
 #
+# Rust
+#
+
+test:
+	cargo build
+	rm -rf tests/*/dist
+	./tests/run.sh
+
+#
 # CI
 #
 

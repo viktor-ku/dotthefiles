@@ -1,0 +1,6 @@
+map:
+  - target:
+      - macos
+    files:
+      - name: file.txt
+        to: dist
