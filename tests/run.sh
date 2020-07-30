@@ -18,7 +18,7 @@ for one in $all; do
   res=$?
 
   if [ $res == "1" ]; then
-    echo red - testing $one... FAILED
+    echo - testing $one... FAILED
   else
     echo + testing $one... OK
   fi
