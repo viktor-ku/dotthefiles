@@ -1,6 +1,7 @@
 use cli::{self, App, Cli};
-use dtflib::{client_os, Context};
+use dtflib::{client_os, Context, DotFile};
 use parser::Parser;
+use std::collections::HashMap;
 use std::io::Result;
 
 mod validate_config;
@@ -36,14 +37,14 @@ fn main() -> Result<()> {
       let mut parser = Parser::with(&cx);
 
       if cx.is_main() {
-        let dotfiles = parser.from_path(&config_path)?.parse()?;
+        let dotfiles = parser.parse(&config_path)?;
 
         cli::link(&cx, &dotfiles, *force)?;
       } else {
         let mut dotfiles_json = String::with_capacity(256);
         std::io::stdin().read_line(&mut dotfiles_json)?;
 
-        let dotfiles = parser.from_json(&dotfiles_json).parse()?;
+        let dotfiles: HashMap<u32, DotFile> = serde_json::from_str(&dotfiles_json)?;
 
         cli::link(&cx, &dotfiles, *force)?;
       }
@@ -60,7 +61,7 @@ fn main() -> Result<()> {
       };
 
       let mut parser = Parser::with(&cx);
-      let dotfiles = parser.from_path(&config_path)?.parse()?;
+      let dotfiles = parser.parse(&config_path)?;
 
       cli::list(&cx, &dotfiles)?;
     }
