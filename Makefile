@@ -1,11 +1,16 @@
 all:
-	echo hey
+	make test
 
 #
 # Rust
 #
 
-test:
+test: test/spec test/int
+
+test/spec:
+	cargo test
+
+test/int:
 	cargo build
 	rm -rf tests/*/dist
 	./tests/run.sh
