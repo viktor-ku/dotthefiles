@@ -13,8 +13,6 @@ fn main() -> Result<()> {
     .collect();
   let app = App::with_args(&args);
 
-  let os_info = os_info::get().os_type();
-  let client_os = &client_os::Type::from(&os_info);
   let home_dir = &dirs::home_dir().unwrap();
 
   let child: bool = match std::env::args().find(|arg| arg == dtflib::CHILD_PARAM) {
@@ -22,14 +20,15 @@ fn main() -> Result<()> {
     Some(_) => true,
   };
 
-  match &app {
-    Cli::Link { config, force } => {
+  match app {
+    Cli::Link { config, force, os } => {
       let (config_path, base_dir) = &validate_config(&config);
+      let client_os = client_os::digest(os);
 
       let cx = Context {
         config_path,
         base_dir,
-        client_os,
+        client_os: &client_os,
         home_dir,
         child,
       };
@@ -39,23 +38,24 @@ fn main() -> Result<()> {
       if cx.is_main() {
         let dotfiles = parser.parse(&config_path)?;
 
-        cli::link(&cx, &dotfiles, *force)?;
+        cli::link(&cx, &dotfiles, force)?;
       } else {
         let mut dotfiles_json = String::with_capacity(256);
         std::io::stdin().read_line(&mut dotfiles_json)?;
 
         let dotfiles: HashMap<u32, DotFile> = serde_json::from_str(&dotfiles_json)?;
 
-        cli::link(&cx, &dotfiles, *force)?;
+        cli::link(&cx, &dotfiles, force)?;
       }
     }
-    Cli::List { config } => {
+    Cli::List { config, os } => {
       let (config_path, base_dir) = &validate_config(&config);
+      let client_os = client_os::digest(os);
 
       let cx = Context {
         config_path,
         base_dir,
-        client_os,
+        client_os: &client_os,
         home_dir,
         child,
       };

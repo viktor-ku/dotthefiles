@@ -1,3 +1,4 @@
+use dtflib::client_os;
 use std::path::PathBuf;
 use structopt::StructOpt;
 
@@ -15,12 +16,24 @@ pub enum Cli {
       help = "overrides destination file if one exists when making a hard link"
     )]
     force: bool,
+
+    #[structopt(
+      long,
+      parse(from_str = client_os::Type::from),
+    )]
+    os: Option<client_os::Type>,
   },
 
   #[structopt(name = "ls")]
   List {
     #[structopt(name = "config-path", parse(from_os_str))]
     config: PathBuf,
+
+    #[structopt(
+      long,
+      parse(from_str = client_os::Type::from),
+    )]
+    os: Option<client_os::Type>,
   },
 }
 

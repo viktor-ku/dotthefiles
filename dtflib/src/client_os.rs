@@ -42,9 +42,9 @@ pub enum Type {
   Unknown,
 }
 
-impl std::convert::From<&os_info::Type> for Type {
-  fn from(os_info_type: &os_info::Type) -> Self {
-    match os_info_type {
+impl std::convert::From<os_info::Type> for Type {
+  fn from(os_info_type: os_info::Type) -> Self {
+    match &os_info_type {
       os_info::Type::Alpine => Self::Alpine,
       os_info::Type::Amazon => Self::Amazon,
       os_info::Type::Arch => Self::Arch,
@@ -74,6 +74,33 @@ impl std::convert::From<&os_info::Type> for Type {
   }
 }
 
+impl std::convert::From<&str> for Type {
+  fn from(val: &str) -> Self {
+    match val {
+      "alpine" => Type::Alpine,
+      "amazon" => Type::Amazon,
+      "arch" => Type::Arch,
+      "centos" => Type::Centos,
+      "debian" => Type::Debian,
+      "fedora" => Type::Fedora,
+      "linux" => Type::Linux,
+      "macos" => Type::Macos,
+      "manjaro" => Type::Manjaro,
+      "opensuse" => Type::OpenSUSE,
+      "oraclelinux" => Type::OracleLinux,
+      "pop" => Type::Pop,
+      "redhat" => Type::Redhat,
+      "redhatenterprise" => Type::RedHatEnterprise,
+      "redox" => Type::Redox,
+      "solus" => Type::Solus,
+      "suse" => Type::SUSE,
+      "ubuntu" => Type::Ubuntu,
+      "windows" => Type::Windows,
+      _ => Type::Unknown,
+    }
+  }
+}
+
 impl Type {
   pub fn all<'a>() -> &'a [Self] {
     &[
@@ -99,4 +126,9 @@ impl Type {
       Type::Unknown,
     ]
   }
+}
+
+#[inline]
+pub fn digest(input: Option<Type>) -> Type {
+  input.unwrap_or_else(|| Type::from(os_info::get().os_type()))
 }
