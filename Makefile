@@ -1,5 +1,4 @@
-all:
-	make test
+all: test
 
 #
 # Rust
@@ -12,8 +11,8 @@ test/spec:
 
 test/int:
 	cargo build
-	rm -rf tests/*/dist
-	./tests/run.sh
+	rm -rf trial/cases/*/dist
+	./trial/run.sh
 
 #
 # CI
