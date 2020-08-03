@@ -14,6 +14,10 @@ assert() {
   test dist/file.txt -ef files/macos/file.txt
 }
 
+name() {
+  echo "it should replace already existing destination file by using -f option"
+}
+
 main() {
   local input="$1"
 
@@ -23,6 +27,8 @@ main() {
     cmd
   elif [[ $input == "assert" ]]; then
     assert
+  elif [[ $input == "name" ]]; then
+    name
   else
     exit 1
   fi

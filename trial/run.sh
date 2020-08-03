@@ -19,13 +19,15 @@ run() {
   echo
   echo "### Testing $one"
 
-  local path=$cases_dir/$one
+  local base_dir="$pwd/$cases_dir/$one"
+  local test=./test.sh
 
-  cd "$path" && echo "- cd into \`$path\`" || echo "- could not cd into \`$path\`"
+  cd "$base_dir"
 
-  test=./test.sh
+  local name=$($test name)
+  test -n "$name" && echo "> $name"
 
-  $test setup && echo "- setup done" || echo "Could not complete setup"
+  $test setup && echo "- setup done" || echo "- could not complete setup"
 
   local cmd=$($test cmd)
   echo "- running \`$cmd\`"
@@ -34,12 +36,10 @@ run() {
   local cmd_errno=$?
   if [[ $cmd_errno != "0" ]]; then
     echo "- cmd itself exited with non-zero ($cmd_errno)"
-    exit 1
+    return "1"
   fi
 
   $test assert && echo "- assert OK" || echo "- assert FAILED"
-
-  cd "$pwd" && echo "- cd back" || echo "- could not cd back"
 }
 
 compute_status() {
@@ -49,10 +49,9 @@ compute_status() {
 
   if [[ $n_failed == 0 ]]; then
     echo "OK"
-    exit 0
+  else
+    echo "FAILED"
   fi
-
-  echo "FAILED"
 }
 
 main() {
