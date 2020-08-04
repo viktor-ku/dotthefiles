@@ -48,7 +48,7 @@ pub fn map<'a>(cx: &Context, config: &'a Config) -> Result<HashMap<u32, DotFile<
 #[cfg(test)]
 mod tests {
   use super::map;
-  use crate::read_yaml;
+  use crate::read_file;
   use dtflib::{client_os, Context, DotFile};
   use pretty_assertions::assert_eq;
   use std::collections::HashMap;
@@ -83,7 +83,7 @@ mod tests {
     let home_dir = &FakeHomeDir::linux();
     let config_path = &base_dir.join("dotthefiles.yml");
 
-    let config = read_yaml(config_path)?;
+    let config = read_file(config_path)?;
 
     let cx = Context {
       base_dir,
@@ -117,7 +117,7 @@ mod tests {
     let home_dir = &FakeHomeDir::darwin();
     let config_path = &base_dir.join("dotthefiles.yml");
 
-    let config = read_yaml(config_path)?;
+    let config = read_file(config_path)?;
 
     let cx = Context {
       base_dir,
@@ -144,7 +144,7 @@ mod tests {
     let home_dir = &FakeHomeDir::darwin();
     let config_path = &base_dir.join("dotthefiles.yml");
 
-    let config = read_yaml(config_path)?;
+    let config = read_file(config_path)?;
 
     let cx = Context {
       base_dir,
@@ -172,7 +172,7 @@ mod tests {
     let home_dir = &FakeHomeDir::darwin();
     let config_path = &base_dir.join("dotthefiles.yml");
 
-    let config = read_yaml(config_path)?;
+    let config = read_file(config_path)?;
 
     let cx = Context {
       base_dir,
@@ -206,7 +206,7 @@ mod tests {
     let home_dir = &FakeHomeDir::darwin();
     let config_path = &base_dir.join("dotthefiles.yml");
 
-    let config = read_yaml(config_path)?;
+    let config = read_file(config_path)?;
 
     let cx = Context {
       base_dir,
@@ -240,7 +240,7 @@ mod tests {
     let home_dir = &FakeHomeDir::darwin();
     let config_path = &base_dir.join("dotthefiles.yml");
 
-    let config = read_yaml(config_path)?;
+    let config = read_file(config_path)?;
 
     let cx = Context {
       base_dir,
@@ -276,7 +276,7 @@ mod tests {
     let home_dir = &FakeHomeDir::darwin();
     let config_path = &base_dir.join("dotthefiles.yml");
 
-    let config = read_yaml(config_path)?;
+    let config = read_file(config_path)?;
 
     let cx = Context {
       base_dir,
@@ -312,7 +312,7 @@ mod tests {
     let home_dir = &FakeHomeDir::darwin();
     let config_path = &base_dir.join("dotthefiles.yml");
 
-    let config = read_yaml(config_path)?;
+    let config = read_file(config_path)?;
 
     let cx = Context {
       base_dir,
@@ -348,7 +348,7 @@ mod tests {
     let home_dir = &FakeHomeDir::linux();
     let config_path = &base_dir.join("dotthefiles.yml");
 
-    let config = read_yaml(config_path)?;
+    let config = read_file(config_path)?;
 
     let cx = Context {
       base_dir,
@@ -384,7 +384,7 @@ mod tests {
     let home_dir = &FakeHomeDir::linux();
     let config_path = &base_dir.join("dotthefiles.yml");
 
-    let config = read_yaml(config_path)?;
+    let config = read_file(config_path)?;
 
     let cx = Context {
       base_dir,
@@ -424,7 +424,7 @@ mod tests {
       let home_dir = &FakeHomeDir::linux();
       let config_path = &base_dir.join("dotthefiles.yml");
 
-      let config = read_yaml(config_path)?;
+      let config = read_file(config_path)?;
 
       let cx = Context {
         base_dir,
@@ -459,7 +459,7 @@ mod tests {
       let home_dir = &FakeHomeDir::linux();
       let config_path = &base_dir.join("dotthefiles.yml");
 
-      let config = read_yaml(config_path)?;
+      let config = read_file(config_path)?;
 
       let cx = Context {
         base_dir,
@@ -495,7 +495,7 @@ mod tests {
       let home_dir = &FakeHomeDir::linux();
       let config_path = &base_dir.join("dotthefiles.yml");
 
-      let config = read_yaml(config_path)?;
+      let config = read_file(config_path)?;
 
       let cx = Context {
         base_dir,
@@ -531,7 +531,7 @@ mod tests {
       let home_dir = &FakeHomeDir::linux();
       let config_path = &base_dir.join("dotthefiles.yml");
 
-      let config = read_yaml(config_path)?;
+      let config = read_file(config_path)?;
 
       let cx = Context {
         base_dir,
@@ -567,7 +567,7 @@ mod tests {
       let home_dir = &FakeHomeDir::linux();
       let config_path = &base_dir.join("dotthefiles.yml");
 
-      let config = read_yaml(config_path)?;
+      let config = read_file(config_path)?;
 
       let cx = Context {
         base_dir,
@@ -602,7 +602,7 @@ mod tests {
       let home_dir = &FakeHomeDir::linux();
       let config_path = &base_dir.join("dotthefiles.yml");
 
-      let config = read_yaml(config_path)?;
+      let config = read_file(config_path)?;
 
       let cx = Context {
         base_dir,
