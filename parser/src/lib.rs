@@ -1,5 +1,5 @@
 use dtflib::{Context, DotFile};
-use read_file::read_yaml;
+use read_file::read_file;
 use std::collections::HashMap;
 use std::io::Result;
 use std::path::PathBuf;
@@ -25,7 +25,7 @@ impl<'a> Parser<'a> {
   }
 
   pub fn parse(&mut self, path: &PathBuf) -> Result<HashMap<u32, DotFile>> {
-    let config: Config = read_yaml(path)?;
+    let config: Config = read_file(path)?;
     self.config = Some(config);
 
     Ok(mapping::map(self.cx, self.config.as_ref().unwrap())?)
