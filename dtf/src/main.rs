@@ -65,6 +65,25 @@ fn main() -> Result<()> {
 
       cli::list(&cx, &dotfiles)?;
     }
+    Cli::Show { config } => {
+      let (config_path, base_dir) = &validate_config(&config);
+      let client_os = client_os::digest(None);
+
+      let cx = Context {
+        config_path,
+        base_dir,
+        client_os: &client_os,
+        home_dir,
+        child,
+      };
+
+      let mut parser = Parser::with(&cx);
+      parser.read_config(config_path)?;
+
+      let config_str = serde_json::to_string_pretty(parser.config().unwrap()).unwrap();
+
+      cli::show(&config_str)?;
+    }
   }
 
   Ok(())

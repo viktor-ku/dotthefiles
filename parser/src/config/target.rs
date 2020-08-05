@@ -1,8 +1,8 @@
 use dtflib::client_os;
-use serde::Deserialize;
+use serde::{Deserialize, Serialize};
 use std::cmp::Ordering;
 
-#[derive(Debug, Deserialize, PartialEq, Eq, Clone, Ord)]
+#[derive(Debug, Deserialize, PartialEq, Eq, Clone, Ord, Serialize)]
 pub enum Target {
   #[serde(alias = "linux")]
   Linux,

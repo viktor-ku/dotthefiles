@@ -1,7 +1,7 @@
 use super::Section;
-use serde::Deserialize;
+use serde::{Deserialize, Serialize};
 
-#[derive(Debug, Deserialize)]
+#[derive(Debug, Deserialize, Serialize)]
 pub struct Config {
   pub map: Vec<Section>,
 }

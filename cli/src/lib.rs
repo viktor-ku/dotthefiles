@@ -35,6 +35,11 @@ pub enum Cli {
     )]
     os: Option<client_os::Type>,
   },
+
+  Show {
+    #[structopt(name = "config-path", parse(from_os_str))]
+    config: PathBuf,
+  },
 }
 
 pub struct App;

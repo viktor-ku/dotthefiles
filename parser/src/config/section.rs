@@ -1,7 +1,7 @@
 use super::{Block, Target};
-use serde::Deserialize;
+use serde::{Deserialize, Serialize};
 
-#[derive(Debug, Deserialize)]
+#[derive(Debug, Deserialize, Serialize)]
 pub struct Section {
   #[serde(default = "Section::default_target")]
   pub target: Vec<Target>,

@@ -24,9 +24,27 @@ impl<'a> Parser<'a> {
     Self { cx, config: None }
   }
 
+  pub fn read_config(&mut self, path: &PathBuf) -> Result<()> {
+    match &self.config {
+      Some(_) => {}
+      None => {
+        let config: Config = read_file(path)?;
+        self.config = Some(config);
+      }
+    }
+
+    Ok(())
+  }
+
+  pub fn config(&self) -> Option<&Config> {
+    match &self.config {
+      Some(config) => Some(config),
+      None => None,
+    }
+  }
+
   pub fn parse(&mut self, path: &PathBuf) -> Result<HashMap<u32, DotFile>> {
-    let config: Config = read_file(path)?;
-    self.config = Some(config);
+    self.read_config(path)?;
 
     Ok(mapping::map(self.cx, self.config.as_ref().unwrap())?)
   }
