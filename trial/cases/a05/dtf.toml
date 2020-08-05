@@ -1,0 +1,8 @@
+[[map]]
+target = [
+  "macos"
+]
+
+[[map.files]]
+name = "file.txt"
+to = "dist"

@@ -8,6 +8,7 @@ edition = "2018"
 serde = { version = "1.0" }
 serde_yaml = { version = "0.8" }
 serde_json = "1.0"
+toml = "0.5"
 
 dtflib = { path = "../dtflib" }
 
