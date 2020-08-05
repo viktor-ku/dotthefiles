@@ -9,10 +9,12 @@ test: test/spec test/int
 test/spec:
 	cargo test
 
-test/int:
+test/int: test/int-clean
 	cargo build
-	rm -rf trial/cases/*/dist
 	./trial/run.sh
+
+test/int-clean:
+	rm -rf trial/cases/*/dist
 
 #
 # CI
