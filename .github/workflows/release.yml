@@ -31,15 +31,20 @@ jobs:
         with:
           toolchain: stable
 
+      - uses: actions/cache@v2
+        with:
+          path: |
+            ~/.cargo/registry
+            ~/.cargo/git
+            target
+          key: ${{ runner.os }}-cargo-${{ hashFiles('**/Cargo.lock') }}
+
       - name: Check
         uses: actions-rs/cargo@v1
         with:
           command: check
 
-      - name: Test
-        uses: actions-rs/cargo@v1
-        with:
-          command: test
+      - run: make test
 
   changelog:
     name: Generate Changelog
