@@ -8,7 +8,7 @@ setup() {
 }
 
 cmd() {
-  echo "dtf ln dtf.yml -f"
+  echo "dtf ln dtf.yml -f --os macos"
 }
 
 assert() {

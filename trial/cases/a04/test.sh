@@ -7,7 +7,7 @@ setup() {
 }
 
 cmd() {
-  echo "dtf ln dtf.json"
+  echo "dtf ln dtf.json --os macos"
 }
 
 assert() {
